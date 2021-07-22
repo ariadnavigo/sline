@@ -1,3 +1,5 @@
+/* See LICENSE for copyright and license details. */
+
 #include <stdio.h>
 
 #include "sline.h"
