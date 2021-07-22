@@ -1,0 +1,31 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_end \- Restore terminal state after using
+.BR sline (3)
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B void sline_end(void);
+.SH DESCRIPTION
+.PP
+.BR sline_end ()
+restores the state of the terminal
+and deallocates all resources needed by
+.BR sline (3)
+that were initially set up by calling
+.BR sline_setup "(3)."
+.PP
+This subroutine should always be called before the program is exited.
+Its signature makes it compatible with the standard
+.BR atexit (3)
+subroutine, 
+making it possible to call
+.BR sline_end ()
+even when the program exists unexpectedly. 
+.SH RETURN VALUE
+.BR sline_end ()
+does not return any value.
+.SH SEE ALSO
+.BR atexit (3), sline (3), sline_setup (3)

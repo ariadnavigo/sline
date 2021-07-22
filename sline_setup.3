@@ -1,0 +1,38 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_setup \- Set up terminal for use with
+.BR sline (3)
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B int
+.BI "sline_setup(int " hist_size );
+.SH DESCRIPTION
+.PP
+.BR sline_setup ()
+sets the terminal up for making it possible to use
+.BR sline (3)
+in a program.
+.PP
+This subroutine should be called always before calling
+.BR sline (3) .
+Failing to do so might lead to undefined behavior.
+.PP
+The
+.I hist_size
+parameter represents the size in bytes
+to be allocated for storing each entry in the command history list.
+.SH RETURN VALUE
+.BR sline_setup ()
+returns 0 if no error occurred
+and returns <0 if any error occured.
+.SH ERRORS
+.BR sline_setup ()
+sets internal error flags when an error is encountered.
+If this is the case,
+.BR sline_errmsg (3)
+may be used to retrieve an error message string to be presented to the user.
+.SH SEE ALSO
+.BR sline (3), sline_errmsg (3), sline_end (3)

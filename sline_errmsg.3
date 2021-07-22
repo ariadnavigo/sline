@@ -1,0 +1,27 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_errmsg \- Retrieve error string in case of error
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B const char *sline_errmsg(void);
+.SH DESCRIPTION
+.PP
+.BR sline_errmsg ()
+checks internal error flags
+and returns a statically allocated error string.
+.PP
+This subroutine should only be called if any 
+.B sline
+subroutines has returned an error status.
+Using 
+.BR sline_errmsg ()
+without having checked whether an error has occured 
+leads to undefined behavior.
+.SH RETURN VALUE
+.BR sline_errmsg ()
+always returns a statically allocated constant string. 
+.SH SEE ALSO
+.BR sline (3), sline_setup (3)
