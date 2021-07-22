@@ -40,7 +40,7 @@ dist: clean
 	gzip sline-${VERSION}.tar
 	rm -rf sline-${VERSION}
 
-install-man: ${MAN}
+install-man:
 	mkdir -p ${DESTDIR}${MANPREFIX}/man3
 	for manpage in ${MAN}; do \
 		sed "s/VERSION/${VERSION}/g" $$manpage \
