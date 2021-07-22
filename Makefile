@@ -29,13 +29,17 @@ ${OBJ}: config.mk
 libsline.a: ${OBJ}
 	ar -rcs $@ ${OBJ}
 
+# sline_test: Test program. This is never installed onto any system.
+sline_test: options libsline.a sline.h sline_test.c
+	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ sline_test.c libsline.a
+
 clean:
-	rm -f libsline.a ${OBJ} sline-${VERSION}.tar.gz
+	rm -f libsline.a sline_test ${OBJ} sline-${VERSION}.tar.gz
 
 dist: clean
 	mkdir -p sline-${VERSION}
-	cp -R LICENSE Makefile README.md history.h sline.h strlcpy.h ${MAN} \
-	   ${SRC} sline-${VERSION}
+	cp -R LICENSE Makefile README.md history.h sline.h sline_test.c \
+	   strlcpy.h ${MAN} ${SRC} sline-${VERSION}
 	tar -cf sline-${VERSION}.tar sline-${VERSION}
 	gzip sline-${VERSION}.tar
 	rm -rf sline-${VERSION}

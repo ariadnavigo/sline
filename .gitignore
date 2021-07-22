@@ -1,3 +1,4 @@
 *.o
 *.tar.gz
 libsline.a
+sline_test
