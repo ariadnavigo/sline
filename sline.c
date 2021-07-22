@@ -51,9 +51,12 @@ static size_t key_end(char *buf, size_t pos);
 
 static size_t chr_delete(char *buf, size_t pos, int bsmode);
 static size_t chr_insert(char *buf, size_t pos, size_t size, char chr);
+static void chr_return(void);
 
+static int sline_history = 1; /* History feature on by default */
 static int sline_errno = SLINE_ERR_DEF;
 static struct termios old, term;
+
 
 static char *
 buf_slice(char *src, int pivot)
@@ -164,6 +167,9 @@ key_up(char *buf, size_t size, size_t pos)
 	const char *hist;
 	size_t len;
 
+	if (sline_history == 0)
+		return pos;
+
 	if (hist_pos > 0)
 		--hist_pos;
 
@@ -185,6 +191,9 @@ key_down(char *buf, size_t size, size_t pos)
 {
 	const char *hist;
 	size_t len;
+
+	if (sline_history == 0)
+		return pos;
 
 	if (hist_pos < hist_curr)
 		++hist_pos;
@@ -313,10 +322,23 @@ chr_insert(char *buf, size_t pos, size_t size, char chr)
 	return pos;
 }
 
+static void
+chr_return(void)
+{
+	write(STDOUT_FILENO, "\n", 1);
+	if (sline_history > 0)
+		history_next();
+}
+
 int
 sline_setup(int size)
 {
 	int i;
+
+	if (size <= 0) {
+		sline_history = 0; /* Disabling history */
+		goto termios;
+	}
 
 	hist_entry_size = size;
 	for (i = 0; i < HISTORY_SIZE; ++i) {
@@ -327,6 +349,7 @@ sline_setup(int size)
 		}
 	}
 
+termios:
 	if (tcgetattr(STDIN_FILENO, &old) < 0) {
 		sline_errno = SLINE_ERR_TERMIOS_GET;
 		return -1;
@@ -349,7 +372,7 @@ sline_end(void)
 {
 	int i;
 
-	if (hist_curr < 0)
+	if (sline_history == 0 || hist_curr < 0)
 		goto termios;
 
 	for (i = 0; i < HISTORY_SIZE; ++i) {
@@ -407,8 +430,7 @@ sline(char *buf, size_t size)
 			sline_errno = SLINE_ERR_EOF;
 			return -1;
 		case VT_RET:
-			write(STDOUT_FILENO, "\n", 1);
-			history_next();
+			chr_return();
 			return 0;
 		case VT_UP:
 			pos = key_up(buf, size, pos);

@@ -24,6 +24,17 @@ The
 .I hist_size
 parameter represents the size in bytes
 to be allocated for storing each entry in the command history list.
+.SS Disabling command history
+.PP
+If
+.I hist_size
+is less than or equal to zero (<=0),
+command history is disabled.
+This cannot be changed once set by a program.
+.PP
+When command history is disabled, 
+.BR sline (3) 
+will ignore any presses to the Up/Down arrow keys.
 .SH RETURN VALUE
 .BR sline_setup ()
 returns 0 if no error occurred
