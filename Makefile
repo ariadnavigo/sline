@@ -6,7 +6,7 @@ include config.mk
 
 SRC = history.c sline.c strlcpy.c
 OBJ = ${SRC:%.c=%.o}
-MAN = sline.3 sline_end.3 sline_errmsg.3 sline_setup.3
+MAN = man/sline.3 man/sline_end.3 man/sline_errmsg.3 man/sline_setup.3
 
 all: options libsline.a
 
@@ -44,9 +44,9 @@ install-man: ${MAN}
 	mkdir -p ${DESTDIR}${MANPREFIX}/man3
 	for manpage in ${MAN}; do \
 		sed "s/VERSION/${VERSION}/g" $$manpage \
-		    > ${DESTDIR}${MANPREFIX}/man3/$$manpage ; \
+		    > ${DESTDIR}${MANPREFIX}/man3/$${manpage#man/} ; \
 	done
-	chmod 644 ${DESTDIR}${MANPREFIX}/man3/sline_*
+	chmod 644 ${DESTDIR}${MANPREFIX}/man3/sline*
 
 install: all install-man
 	mkdir -p ${DESTDIR}${PREFIX}/lib
