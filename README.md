@@ -27,7 +27,7 @@ Customize the build process by changing ``config.mk`` to suit your needs.
 
 ### No dynamic library version support
 
-sline only provides a static library and is out of the goals of this project to
+sline only provides a static library. It's out of the goals of this project to
 implement a dynamic library version of it. Static libraries allow easier
 integration into testing and are easier to deploy in general.
 
