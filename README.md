@@ -39,10 +39,10 @@ You may install sline by running the following command as root:
 # make install
 ```
 
-This will install the binary under ``$PREFIX/bin``, as defined by your
-environment, or ``/usr/local/bin`` by default. The Makefile supports the
-``$DESTDIR`` variable as well.
-
+This will install the static library under ``$PREFIX/lib``, as defined by your
+environment, or ``/usr/local/lib`` by default. Header files will be installed
+under ``${PREFIX}/include``, or ``/usr/local/include`` by default. The Makefile 
+supports the ``$DESTDIR`` variable as well.
 ## API manuals
 
 sline's API is very simple. You may refer to the sline(3) manual page for an
