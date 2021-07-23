@@ -8,7 +8,7 @@ sline_setup \- Set up terminal for use with
 .B #include <sline.h>
 .PP
 .B int
-.BI "sline_setup(int " hist_size );
+.BI "sline_setup(int " entry_size );
 .SH DESCRIPTION
 .PP
 .BR sline_setup ()
@@ -21,13 +21,13 @@ This subroutine should be called always before calling
 Failing to do so might lead to undefined behavior.
 .PP
 The
-.I hist_size
+.I entry_size
 parameter represents the size in bytes
 to be allocated for storing each entry in the command history list.
 .SS Disabling command history
 .PP
 If
-.I hist_size
+.I entry_size
 is less than or equal to zero (<=0),
 command history is disabled.
 This cannot be changed once set by a program.

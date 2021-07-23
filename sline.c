@@ -330,16 +330,16 @@ chr_return(void)
 }
 
 int
-sline_setup(int size)
+sline_setup(int entry_size)
 {
 	int i;
 
-	if (size <= 0) {
+	if (entry_size <= 0) {
 		sline_history = 0; /* Disabling history */
 		goto termios;
 	}
 
-	hist_entry_size = size;
+	hist_entry_size = entry_size;
 	for (i = 0; i < HISTORY_SIZE; ++i) {
 		history[i] = calloc(hist_entry_size, sizeof(char));
 		if (history[i] == NULL) {
