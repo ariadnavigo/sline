@@ -57,7 +57,6 @@ static int sline_history = 1; /* History feature on by default */
 static int sline_errno = SLINE_ERR_DEF;
 static struct termios old, term;
 
-
 static char *
 buf_slice(char *src, int pivot)
 {
