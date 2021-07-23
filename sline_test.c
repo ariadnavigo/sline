@@ -1,11 +1,12 @@
 /* See LICENSE for copyright and license details. */
 
+#include <stddef.h>
 #include <stdio.h>
 
 #include "sline.h"
 
 #define BUF_SIZE 64
-#define HISTORY_SIZE 0
+#define HISTORY_SIZE 64
 
 int
 main(void)
