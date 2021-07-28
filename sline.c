@@ -1,5 +1,6 @@
 /* See LICENSE for copyright and license details. */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,7 @@
 #include "strlcpy.h"
 
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
+#define SLINE_PROMPT_SIZE 32
 
 enum {
 	VT_DEF,
@@ -53,6 +55,7 @@ static size_t chr_delete(char *buf, size_t pos, int bsmode);
 static size_t chr_insert(char *buf, size_t pos, size_t size, char chr);
 static void chr_return(void);
 
+static char sline_prompt[SLINE_PROMPT_SIZE];
 static int sline_history = 1; /* History feature on by default */
 static int sline_errno = SLINE_ERR_DEF;
 static struct termios old, term;
@@ -367,6 +370,18 @@ termios:
 }
 
 void
+sline_set_prompt(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+
+	/* vsnprintf() is ISO C99 */
+	vsnprintf(sline_prompt, SLINE_PROMPT_SIZE, fmt, ap);
+
+	va_end(ap);
+}
+
+void
 sline_end(void)
 {
 	int i;
@@ -410,6 +425,8 @@ sline(char *buf, size_t size)
 	size_t pos;
 
 	memset(buf, 0, size);
+
+	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
 
 	chr = 0;
 	pos = 0;
