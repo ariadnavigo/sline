@@ -35,17 +35,7 @@ sline_test: options libsline.a sline.h sline_test.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ sline_test.c libsline.a
 
 clean:
-	rm -f libsline.a sline_test ${OBJ} sline-${VERSION}.tar.gz
-
-dist: clean
-	mkdir -p sline-${VERSION}
-	cp -R LICENSE Makefile README.md config.mk history.h sline.h \
-	   sline_test.c strlcpy.h ${SRC} sline-${VERSION}
-	mkdir -p sline-${VERSION}/man
-	cp -R ${MAN} sline-${VERSION}/man
-	tar -cf sline-${VERSION}.tar sline-${VERSION}
-	gzip sline-${VERSION}.tar
-	rm -rf sline-${VERSION}
+	rm -f libsline.a sline_test ${OBJ}
 
 install-man:
 	mkdir -p ${DESTDIR}${MANPREFIX}/man3
@@ -68,4 +58,4 @@ uninstall:
 	   ${DESTDIR}${PREFIX}/include/sline.h \
 	   ${DESTDIR}${MANPREFIX}/man3/sline*
 
-.PHONY: all options clean dist install install-man uninstall
+.PHONY: all options clean install install-man uninstall
