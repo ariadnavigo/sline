@@ -6,7 +6,8 @@ include config.mk
 
 SRC = history.c sline.c strlcpy.c
 OBJ = ${SRC:%.c=%.o}
-MAN = man/sline.3 man/sline_end.3 man/sline_errmsg.3 man/sline_setup.3
+MAN = man/sline.3 man/sline_end.3 man/sline_errmsg.3 man/sline_setup.3 \
+      man/sline_set_prompt.3
 
 all: options libsline.a
 
@@ -38,8 +39,10 @@ clean:
 
 dist: clean
 	mkdir -p sline-${VERSION}
-	cp -R LICENSE Makefile README.md history.h sline.h sline_test.c \
-	   strlcpy.h ${MAN} ${SRC} sline-${VERSION}
+	cp -R LICENSE Makefile README.md config.mk history.h sline.h \
+	   sline_test.c strlcpy.h ${SRC} sline-${VERSION}
+	mkdir -p sline-${VERSION}/man
+	cp -R ${MAN} sline-${VERSION}/man
 	tar -cf sline-${VERSION}.tar sline-${VERSION}
 	gzip sline-${VERSION}.tar
 	rm -rf sline-${VERSION}
