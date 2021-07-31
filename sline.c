@@ -12,6 +12,7 @@
 #include "strlcpy.h"
 
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
+#define SLINE_PROMPT_DEFAULT "> " 
 #define SLINE_PROMPT_SIZE 32
 
 enum {
@@ -336,6 +337,8 @@ int
 sline_setup(int entry_size)
 {
 	int i;
+
+	sline_set_prompt(SLINE_PROMPT_DEFAULT);
 
 	if (entry_size <= 0) {
 		sline_history = 0; /* Disabling history */

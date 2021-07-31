@@ -12,15 +12,18 @@ int
 main(void)
 {
 	char buf[BUF_SIZE];
+	int cnt;
 
 	if (sline_setup(HISTORY_SIZE) < 0) {
 		fprintf(stderr, "sline: %s", sline_errmsg());
 		return -1;
 	}
 
+	cnt = 0;
 	while (feof(stdin) == 0) {
-		printf("> ");
-		fflush(stdout);
+		/* Comment line below to use the default prompt. */
+		sline_set_prompt("%d> ", cnt++);
+
 		if (sline(buf, BUF_SIZE) < 0)
 			goto exit;
 
