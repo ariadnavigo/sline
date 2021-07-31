@@ -18,7 +18,9 @@ stores a string of at most
 .I size
 bytes from standard input into
 .I buf
-by presenting the user a prompt with line-editing capabilities
+by presenting the user a prompt 
+("> ", by default) 
+with line-editing capabilities
 and also history browsing by means of the Up/Down arrow keys.
 .PP
 The caller subroutine should ensure the correct allocation of the
@@ -32,6 +34,10 @@ To be able to use
 .BR sline_setup (3)
 must be called beforehand in order for the terminal to be set up properly
 and memory resources to be allocated.
+.PP
+The default prompt can be changed by calling
+.BR sline_set_prompt (3)
+as many times as needed.
 .PP
 At exit, it is highly advisable to call
 .BR sline_end (3)
@@ -48,4 +54,4 @@ If this is the case,
 .BR sline_errmsg (3)
 may be used to retrieve an error message string to be presented to the user.
 .SH SEE ALSO
-.BR sline_errmsg (3), sline_end (3), sline_setup (3)
+.BR sline_errmsg (3), sline_end (3), sline_setup (3), sline_set_prompt (3)

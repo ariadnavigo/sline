@@ -1,0 +1,28 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_set_prompt \- Set up terminal for use with
+.BR sline (3)
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B void
+.BI "sline_set_prompt(const char *" fmt ", ...);"
+.SH DESCRIPTION
+.PP
+.BR sline_set_prompt ()
+changes the default prompt printed by
+.BR sline (3).
+.PP
+The new prompt is defined by using a
+.BR printf (3)-type
+format string as the
+.I fmt
+parameter,
+followed by the necessary positional arguments.
+.SH RETURN VALUE
+.BR sline_set_prompt ()
+does not return any values.
+.SH SEE ALSO
+.BR printf (3), sline (3)
