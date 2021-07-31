@@ -61,6 +61,8 @@ static int sline_history = 1; /* History feature on by default */
 static int sline_errno = SLINE_ERR_DEF;
 static struct termios old, term;
 
+/* Auxiliary VT100 related subroutines */
+
 static char *
 buf_slice(char *src, int pivot)
 {
@@ -333,92 +335,7 @@ chr_return(void)
 		history_next();
 }
 
-int
-sline_setup(int entry_size)
-{
-	int i;
-
-	sline_set_prompt(SLINE_PROMPT_DEFAULT);
-
-	if (entry_size <= 0) {
-		sline_history = 0; /* Disabling history */
-		goto termios;
-	}
-
-	hist_entry_size = entry_size;
-	for (i = 0; i < HISTORY_SIZE; ++i) {
-		history[i] = calloc(hist_entry_size, sizeof(char));
-		if (history[i] == NULL) {
-			sline_errno = SLINE_ERR_MEMORY;
-			return -1;
-		}
-	}
-
-termios:
-	if (tcgetattr(STDIN_FILENO, &old) < 0) {
-		sline_errno = SLINE_ERR_TERMIOS_GET;
-		return -1;
-	}
-
-	term = old;
-	term.c_lflag &= ~(ICANON | ECHO | ISIG);
-	term.c_cc[VMIN] = 0;
-	term.c_cc[VTIME] = 1;
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) < 0) {
-		sline_errno = SLINE_ERR_TERMIOS_SET;
-		return -1;
-	}
-
-	return 0;
-}
-
-void
-sline_set_prompt(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-
-	/* vsnprintf() is ISO C99 */
-	vsnprintf(sline_prompt, SLINE_PROMPT_SIZE, fmt, ap);
-
-	va_end(ap);
-}
-
-void
-sline_end(void)
-{
-	int i;
-
-	if (sline_history == 0 || hist_curr < 0)
-		goto termios;
-
-	for (i = 0; i < HISTORY_SIZE; ++i) {
-		if (history[i] != NULL)
-			free(history[i]);
-	}
-
-termios:
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &old);
-}
-
-const char *
-sline_errmsg(void)
-{
-	switch (sline_errno) {
-	case SLINE_ERR_EOF:
-		return "EOF caught.";
-	case SLINE_ERR_IO:
-		return "I/O error.";
-	case SLINE_ERR_MEMORY:
-		return "could not allocate internal memory.";
-	case SLINE_ERR_TERMIOS_GET:
-		return "could not read attributes.";
-	case SLINE_ERR_TERMIOS_SET:
-		return "could not set attributes.";
-	default:
-		return "unknown error.";
-	}
-}
+/* Public sline API subroutines follow */
 
 int
 sline(char *buf, size_t size)
@@ -481,4 +398,91 @@ sline(char *buf, size_t size)
 	}
 
 	return -1;
+}
+
+void
+sline_end(void)
+{
+	int i;
+
+	if (sline_history == 0 || hist_curr < 0)
+		goto termios;
+
+	for (i = 0; i < HISTORY_SIZE; ++i) {
+		if (history[i] != NULL)
+			free(history[i]);
+	}
+
+termios:
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &old);
+}
+
+const char *
+sline_errmsg(void)
+{
+	switch (sline_errno) {
+	case SLINE_ERR_EOF:
+		return "EOF caught.";
+	case SLINE_ERR_IO:
+		return "I/O error.";
+	case SLINE_ERR_MEMORY:
+		return "could not allocate internal memory.";
+	case SLINE_ERR_TERMIOS_GET:
+		return "could not read attributes.";
+	case SLINE_ERR_TERMIOS_SET:
+		return "could not set attributes.";
+	default:
+		return "unknown error.";
+	}
+}
+
+int
+sline_setup(int entry_size)
+{
+	int i;
+
+	sline_set_prompt(SLINE_PROMPT_DEFAULT);
+
+	if (entry_size <= 0) {
+		sline_history = 0; /* Disabling history */
+		goto termios;
+	}
+
+	hist_entry_size = entry_size;
+	for (i = 0; i < HISTORY_SIZE; ++i) {
+		history[i] = calloc(hist_entry_size, sizeof(char));
+		if (history[i] == NULL) {
+			sline_errno = SLINE_ERR_MEMORY;
+			return -1;
+		}
+	}
+
+termios:
+	if (tcgetattr(STDIN_FILENO, &old) < 0) {
+		sline_errno = SLINE_ERR_TERMIOS_GET;
+		return -1;
+	}
+
+	term = old;
+	term.c_lflag &= ~(ICANON | ECHO | ISIG);
+	term.c_cc[VMIN] = 0;
+	term.c_cc[VTIME] = 1;
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) < 0) {
+		sline_errno = SLINE_ERR_TERMIOS_SET;
+		return -1;
+	}
+
+	return 0;
+}
+
+void
+sline_set_prompt(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+
+	/* vsnprintf() is ISO C99 */
+	vsnprintf(sline_prompt, SLINE_PROMPT_SIZE, fmt, ap);
+
+	va_end(ap);
 }
