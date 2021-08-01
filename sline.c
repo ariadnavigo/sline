@@ -110,10 +110,8 @@ term_key(char *chr)
 	int nread;
 
 	while ((nread = read(STDIN_FILENO, &key, 1)) != 1) {
-		if (nread == -1) {
-			sline_err = SLINE_ERR_IO;
+		if (nread == -1)
 			return -1;
-		}
 	}
 
 	if (key == '\x1b') {
@@ -386,8 +384,10 @@ sline(char *buf, size_t size)
 			/* Silently ignore everything that isn't caught. */
 			break;
 		}
-
 	}
+
+	/* If we reach this, then term_key() returned -1 */
+	sline_err = SLINE_ERR_IO;
 
 	return -1;
 }
