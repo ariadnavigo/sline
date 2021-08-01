@@ -51,7 +51,7 @@ static char sline_prompt[SLINE_PROMPT_SIZE];
 static int sline_history = 1; /* History feature on by default */
 static struct termios old, term;
 
-int sline_errno = SLINE_ERR_DEF;
+int sline_err = SLINE_ERR_DEF;
 
 /* Auxiliary VT100 related subroutines */
 
@@ -111,7 +111,7 @@ term_key(char *chr)
 
 	while ((nread = read(STDIN_FILENO, &key, 1)) != 1) {
 		if (nread == -1) {
-			sline_errno = SLINE_ERR_IO;
+			sline_err = SLINE_ERR_IO;
 			return -1;
 		}
 	}
@@ -355,7 +355,7 @@ sline(char *buf, size_t size)
 			break;
 		case VT_EOF:
 			write(STDOUT_FILENO, "\n", 1);
-			sline_errno = SLINE_ERR_EOF;
+			sline_err = SLINE_ERR_EOF;
 			return -1;
 		case VT_RET:
 			chr_return();
@@ -412,7 +412,7 @@ termios:
 const char *
 sline_errmsg(void)
 {
-	switch (sline_errno) {
+	switch (sline_err) {
 	case SLINE_ERR_EOF:
 		return "EOF caught.";
 	case SLINE_ERR_IO:
@@ -444,14 +444,14 @@ sline_setup(int entry_size)
 	for (i = 0; i < HISTORY_SIZE; ++i) {
 		history[i] = calloc(hist_entry_size, sizeof(char));
 		if (history[i] == NULL) {
-			sline_errno = SLINE_ERR_MEMORY;
+			sline_err = SLINE_ERR_MEMORY;
 			return -1;
 		}
 	}
 
 termios:
 	if (tcgetattr(STDIN_FILENO, &old) < 0) {
-		sline_errno = SLINE_ERR_TERMIOS_GET;
+		sline_err = SLINE_ERR_TERMIOS_GET;
 		return -1;
 	}
 
@@ -460,7 +460,7 @@ termios:
 	term.c_cc[VMIN] = 0;
 	term.c_cc[VTIME] = 1;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) < 0) {
-		sline_errno = SLINE_ERR_TERMIOS_SET;
+		sline_err = SLINE_ERR_TERMIOS_SET;
 		return -1;
 	}
 
