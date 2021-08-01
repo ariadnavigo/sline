@@ -30,15 +30,6 @@ enum {
 	VT_END
 };
 
-enum {
-	SLINE_ERR_DEF,
-	SLINE_ERR_EOF,
-	SLINE_ERR_IO,
-	SLINE_ERR_MEMORY,
-	SLINE_ERR_TERMIOS_GET,
-	SLINE_ERR_TERMIOS_SET
-};
-
 static char *buf_slice(char *src, int pivot);
 static void ln_redraw(const char *str, size_t nbytes);
 
@@ -58,8 +49,9 @@ static void chr_return(void);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
 static int sline_history = 1; /* History feature on by default */
-static int sline_errno = SLINE_ERR_DEF;
 static struct termios old, term;
+
+int sline_errno = SLINE_ERR_DEF;
 
 /* Auxiliary VT100 related subroutines */
 
