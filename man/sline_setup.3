@@ -37,12 +37,28 @@ When command history is disabled,
 will ignore any presses to the Up/Down arrow keys.
 .SH RETURN VALUE
 .BR sline_setup ()
-returns 0 if no error occurred
-and returns <0 if any error occured.
+returns 0 if no error occurred.
+If an error did occur, a value less than 0 is returned 
+and
+.I sline_err
+is set.
 .SH ERRORS
+.PP
+On an error condition,
 .BR sline_setup ()
-sets internal error flags when an error is encountered.
-If this is the case,
+sets
+.I sline_err
+as follows:
+.TP
+.B SLINE_ERR_MEMORY
+Memory allocation failed.
+.TP
+.B SLINE_ERR_TERMIOS_GET
+Terminal attributes could not be read.
+.TP
+.B SLINE_ERR_TERMIOS_SET
+Terminal attributes could not be set.
+.PP
 .BR sline_errmsg (3)
 may be used to retrieve an error message string to be presented to the user.
 .SH SEE ALSO

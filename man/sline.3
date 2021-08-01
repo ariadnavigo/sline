@@ -11,6 +11,8 @@ sline \- Get user input with simple line-editing and command history
 .B int
 .BI "sline(char *" buf , 
 .BI "size_t " size );
+.PP
+.BI "extern int " sline_err ;
 .SH DESCRIPTION
 .PP
 .BR sline ()
@@ -45,12 +47,25 @@ to restore the terminal state
 and free all used memory. 
 .SH RETURN VALUE
 .BR sline ()
-returns 0 if no error occurred
-and returns <0 if any error occured.
+returns 0 if no error occurred. 
+If an error did occur, 
+a value less than 0 is returned and
+.I sline_err
+is set.
 .SH ERRORS
+.PP
+On an error condition,
 .BR sline ()
-sets internal error flags when an error is encountered.
-If this is the case,
+sets
+.I sline_err
+as follows:
+.TP 
+.B SLINE_ERR_EOF
+EOF was reached.
+.TP 
+.B SLINE_ERR_IO
+An unreadable character or escape sequence was found during I/O.
+.PP
 .BR sline_errmsg (3)
 may be used to retrieve an error message string to be presented to the user.
 .SH SEE ALSO

@@ -7,10 +7,13 @@ sline_errmsg \- Retrieve error string in case of error
 .B #include <sline.h>
 .PP
 .B const char *sline_errmsg(void);
+.PP
+.BI "extern int " sline_err ;
 .SH DESCRIPTION
 .PP
 .BR sline_errmsg ()
-checks internal error flags
+checks
+.I sline_err
 and returns a statically allocated error string.
 .PP
 This subroutine should only be called if any 
