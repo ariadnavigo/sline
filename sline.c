@@ -328,7 +328,7 @@ chr_return(void)
 /* Public sline API subroutines follow */
 
 int
-sline(char *buf, size_t size)
+sline(char *buf, size_t size, const char *init)
 {
 	char chr;
 	int key;
@@ -344,8 +344,14 @@ sline(char *buf, size_t size)
 
 	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
 
-	chr = 0;
 	pos = 0;
+	if (init != NULL) {
+		strlcpy(buf, init, size);
+		write(STDOUT_FILENO, buf, size);
+		pos = strlen(buf);
+	}
+
+	chr = 0;
 	hist_pos = hist_curr;
 	while ((key = term_key(&chr)) != -1) {
 		switch (key) {
