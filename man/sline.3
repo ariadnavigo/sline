@@ -16,9 +16,9 @@ sline \- Get user input with simple line-editing and command history
 .SH DESCRIPTION
 .PP
 .BR sline ()
-stores a string of at most 
+stores at most one character less than 
 .I size
-bytes from standard input into
+from standard input into
 .I buf
 by presenting the user a prompt 
 ("> ", by default) 
@@ -30,6 +30,7 @@ The caller subroutine should ensure the correct allocation of the
 string,
 as well as ensure that its allocating size is equal or higher than
 .IR size .
+The string is guaranteed to be terminated by a null character.
 .PP
 To be able to use
 .BR sline "(),"

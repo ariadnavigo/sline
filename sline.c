@@ -332,8 +332,14 @@ sline(char *buf, size_t size)
 {
 	char chr;
 	int key;
-	size_t pos;
+	size_t pos, wsize;
 
+	/* 
+	 * We're always writing one less, so together with the memset() call
+	 * below, using wsize will guarantee the last character in buf to 
+	 * always be '\0'.
+	 */
+	wsize = size - 1; 
 	memset(buf, 0, size);
 
 	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
@@ -359,10 +365,10 @@ sline(char *buf, size_t size)
 			chr_return();
 			return 0;
 		case VT_UP:
-			pos = key_up(buf, size, pos);
+			pos = key_up(buf, wsize, pos);
 			break;
 		case VT_DWN:
-			pos = key_down(buf, size, pos);
+			pos = key_down(buf, wsize, pos);
 			break;
 		case VT_LFT:
 			pos = key_left(pos);
@@ -377,7 +383,7 @@ sline(char *buf, size_t size)
 			pos = key_end(buf, pos);
 			break;
 		case VT_CHR:
-			pos = chr_insert(buf, pos, size, chr);
+			pos = chr_insert(buf, pos, wsize, chr);
 			hist_pos = hist_curr;
 			break;
 		default:
