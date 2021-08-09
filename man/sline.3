@@ -10,7 +10,8 @@ sline \- Get user input with simple line-editing and command history
 .PP
 .B int
 .BI "sline(char *" buf , 
-.BI "size_t " size );
+.BI "size_t " size ,
+.BI "const char *" init );
 .PP
 .BI "extern int " sline_err ;
 .SH DESCRIPTION
@@ -31,6 +32,15 @@ string,
 as well as ensure that its allocating size is equal or higher than
 .IR size .
 The string is guaranteed to be terminated by a null character.
+.PP
+The
+.I init
+parameter sets the string 
+that is presented to the user as the default value.
+If the parameter is set as
+.I NULL
+the feature is deactivated 
+and no string is shown as default value at the prompt.
 .PP
 To be able to use
 .BR sline "(),"
