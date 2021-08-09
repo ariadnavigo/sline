@@ -346,6 +346,10 @@ sline(char *buf, size_t size, const char *init)
 
 	pos = 0;
 	if (init != NULL) {
+		/* 
+		 * Using size instead of wsize because we're already given a
+		 * null terminated string.
+		 */
 		strlcpy(buf, init, size);
 		write(STDOUT_FILENO, buf, size);
 		pos = strlen(buf);
