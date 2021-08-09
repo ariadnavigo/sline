@@ -7,6 +7,7 @@
 
 #define BUF_SIZE 64
 #define HISTORY_SIZE 64
+#define INIT_STR NULL /* Set to a literal string to test init strings */
 
 int
 main(void)
@@ -24,7 +25,7 @@ main(void)
 		/* Comment line below to use the default prompt. */
 		sline_set_prompt("%d> ", cnt++);
 
-		if ((sline_stat = sline(buf, BUF_SIZE)) < 0)
+		if ((sline_stat = sline(buf, BUF_SIZE, INIT_STR)) < 0)
 			goto exit;
 
 		printf("Input was: %s\n", buf);
