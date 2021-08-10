@@ -10,7 +10,7 @@ enum {
 	SLINE_ERR_TERMIOS_SET
 };
 
-int sline(char *buf, size_t size, const char *init);
+int sline(char *buf, int size, const char *init);
 void sline_end(void);
 const char *sline_errmsg(void);
 int sline_setup(int entry_size);

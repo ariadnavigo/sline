@@ -328,7 +328,7 @@ chr_return(void)
 /* Public sline API subroutines follow */
 
 int
-sline(char *buf, size_t size, const char *init)
+sline(char *buf, int size, const char *init)
 {
 	char chr;
 	int key;

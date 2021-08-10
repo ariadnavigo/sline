@@ -4,13 +4,11 @@
 sline \- Get user input with simple line-editing and command history
 .SH SYNOPSIS
 .PP
-.B #include <stddef.h>
-.br
 .B #include <sline.h>
 .PP
 .B int
 .BI "sline(char *" buf , 
-.BI "size_t " size ,
+.BI "int " size ,
 .BI "const char *" init );
 .PP
 .BI "extern int " sline_err ;

@@ -1,6 +1,5 @@
 /* See LICENSE for copyright and license details. */
 
-#include <stddef.h>
 #include <stdio.h>
 
 #include "sline.h"
