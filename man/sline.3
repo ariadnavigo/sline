@@ -24,6 +24,11 @@ by presenting the user a prompt
 with line-editing capabilities
 and also history browsing by means of the Up/Down arrow keys.
 .PP
+The prompt will only allow to type in as many characters as set as maximum.
+(i.e.
+.I size
+- 1)
+.PP
 The caller subroutine should ensure the correct allocation of the
 .I buf
 string,
