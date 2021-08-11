@@ -14,6 +14,8 @@ main(void)
 	char buf[BUF_SIZE];
 	int cnt, sline_stat;
 
+	printf("sline_test: compiled with sline %s.\n", sline_version());
+
 	if (sline_setup(HISTORY_SIZE) < 0) {
 		fprintf(stderr, "sline: %s", sline_errmsg());
 		return -1;
