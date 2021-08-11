@@ -494,3 +494,9 @@ sline_set_prompt(const char *fmt, ...)
 
 	va_end(ap);
 }
+
+const char *
+sline_version(void)
+{
+	return VERSION;
+}
