@@ -1,0 +1,19 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_version \- Report version of sline
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B const char *sline_version(void);
+.SH DESCRIPTION
+.PP
+.BR sline_version ()
+reports the version of sline as a string,
+as defined at compile-time.
+.SH RETURN VALUE
+.BR sline_version ()
+always returns a statically allocated constant string. 
+.SH SEE ALSO
+.BR sline (3)

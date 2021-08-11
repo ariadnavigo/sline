@@ -7,7 +7,7 @@ include config.mk
 SRC = history.c sline.c strlcpy.c
 OBJ = ${SRC:%.c=%.o}
 MAN = man/sline.3 man/sline_end.3 man/sline_errmsg.3 man/sline_setup.3 \
-      man/sline_set_prompt.3
+      man/sline_set_prompt.3 man/sline_version.3
 
 all: options libsline.a
 
