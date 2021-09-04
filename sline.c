@@ -14,6 +14,7 @@
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
 #define SLINE_PROMPT_DEFAULT "> " 
 #define SLINE_PROMPT_SIZE 32
+#define UTF_BYTES 2
 
 enum {
 	VT_DEF,
@@ -32,8 +33,9 @@ enum {
 
 static char *buf_slice(char *src, int pivot);
 static void ln_redraw(const char *str, size_t nbytes);
+static int utf_nbytes(const char *utf);
 
-static int term_key(char *chr);
+static int term_key(char *utf);
 static int term_esc(char *seq);
 
 static size_t key_up(char *buf, size_t size, size_t pos);
@@ -44,7 +46,7 @@ static size_t key_home(size_t pos);
 static size_t key_end(char *buf, size_t pos);
 
 static size_t chr_delete(char *buf, size_t pos, int bsmode);
-static size_t chr_insert(char *buf, size_t pos, size_t size, char chr);
+static size_t chr_ins(char *buf, size_t pos, size_t size, const char *utf);
 static void chr_return(void);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
@@ -84,6 +86,15 @@ ln_redraw(const char *str, size_t nbytes)
 }
 
 static int
+utf_nbytes(const char *utf)
+{
+	if (utf[0] >= '\xc0' && utf[0] <= '\xef')
+		return 2;
+
+	return 1;
+}
+
+static int
 term_esc(char *seq)
 {
 	if (read(STDIN_FILENO, &seq[0], 1) != 1)
@@ -103,7 +114,7 @@ term_esc(char *seq)
 }
 
 static int
-term_key(char *chr)
+term_key(char *utf)
 {
 	char key;
 	char seq[3];
@@ -149,11 +160,18 @@ term_key(char *chr)
 		return VT_EOF;
 	} else if (key == '\x0a') {
 		return VT_RET;
-	} else {
-		/* Not an escaped or control key */
-		*chr = key;
+	} else if (key >= '\xc0' && key <= '\xdf') {
+		/* 2 byte UTF-8 past ASCII */
+		utf[0] = key;
+		read(STDIN_FILENO, &utf[1], 1);
 		return VT_CHR;
-	}
+	} else { /* if (key < '\xc0') { */
+		/* Not an escaped or control key */
+		utf[0] = key;
+		return VT_CHR;
+	} /* else {
+		return VT_DEF;
+	} */
 }
 
 static size_t
@@ -291,10 +309,11 @@ chr_delete(char *buf, size_t pos, int bsmode)
 }
 
 static size_t
-chr_insert(char *buf, size_t pos, size_t size, char chr)
+chr_ins(char *buf, size_t pos, size_t size, const char *utf)
 {
 	char *suff;
 	size_t len;
+	int i, nbytes;
 
 	if (pos >= size)
 		return pos;
@@ -303,11 +322,13 @@ chr_insert(char *buf, size_t pos, size_t size, char chr)
 		return pos;
 
 	len = strlen(suff);
-	buf[pos] = chr;
-	++pos;
-	strlcpy(buf + pos, suff, len + 1);
-
-	write(STDOUT_FILENO, &chr, 1);
+	nbytes = utf_nbytes(utf);
+	for (i = 0; i < nbytes; ++i) {
+		buf[pos] = utf[i];
+		++pos;
+		strlcpy(buf + pos, suff, len + 1);
+		write(STDOUT_FILENO, &utf[i], 1);
+	}
 	ln_redraw(suff, len);
 
 	free(suff);
@@ -330,9 +351,11 @@ chr_return(void)
 int
 sline(char *buf, int size, const char *init)
 {
-	char chr;
+	char utf[UTF_BYTES];
 	int key;
 	size_t pos, wsize;
+
+	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
 
 	/* 
 	 * We're always writing one less, so together with the memset() call
@@ -341,9 +364,6 @@ sline(char *buf, int size, const char *init)
 	 */
 	wsize = size - 1; 
 	memset(buf, 0, size);
-
-	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
-
 	pos = 0;
 	if (init != NULL) {
 		/* 
@@ -355,9 +375,9 @@ sline(char *buf, int size, const char *init)
 		pos = strlen(buf);
 	}
 
-	chr = 0;
+	memset(utf, 0, UTF_BYTES);
 	hist_pos = hist_curr;
-	while ((key = term_key(&chr)) != -1) {
+	while ((key = term_key(utf)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
 			pos = chr_delete(buf, pos, 1);
@@ -393,7 +413,7 @@ sline(char *buf, int size, const char *init)
 			pos = key_end(buf, pos);
 			break;
 		case VT_CHR:
-			pos = chr_insert(buf, pos, wsize, chr);
+			pos = chr_ins(buf, pos, wsize, utf);
 			hist_pos = hist_curr;
 			break;
 		default:
