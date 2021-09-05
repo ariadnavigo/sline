@@ -14,7 +14,7 @@
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
 #define SLINE_PROMPT_DEFAULT "> " 
 #define SLINE_PROMPT_SIZE 32
-#define UTF_BYTES 2
+#define UTF_BYTES 4
 
 enum {
 	VT_DEF,
@@ -88,8 +88,12 @@ ln_redraw(const char *str, size_t nbytes)
 static int
 utf_nbytes(const char *utf)
 {
-	if (utf[0] >= '\xc0' && utf[0] <= '\xef')
+	if (utf[0] >= '\xc0' && utf[0] <= '\xdf')
 		return 2;
+	else if (utf[0] >= '\xe0' && utf[0] <= '\xef')
+		return 3;
+	else if (utf[0] >= '\xf0' && utf[0] <= '\xf7')
+		return 4;
 
 	return 1;
 }
@@ -165,13 +169,20 @@ term_key(char *utf)
 		utf[0] = key;
 		read(STDIN_FILENO, &utf[1], 1);
 		return VT_CHR;
-	} else { /* if (key < '\xc0') { */
-		/* Not an escaped or control key */
+	} else if (key >= '\xe0' && key <= '\xef'){
+		/* 3 byte UTF-8 */
+		utf[0] = key;
+		read(STDIN_FILENO, utf + 1, 2);
+		return VT_CHR;
+	} else if (key >= '\xf0' && key <= '\xf7') {
+		/* 4 byte UTF-8 */
+		utf[0] = key;
+		read(STDIN_FILENO, utf + 1, 3);
+		return VT_CHR;
+	} else {
 		utf[0] = key;
 		return VT_CHR;
-	} /* else {
-		return VT_DEF;
-	} */
+	}
 }
 
 static size_t
