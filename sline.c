@@ -14,7 +14,7 @@
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
 #define SLINE_PROMPT_DEFAULT "> " 
 #define SLINE_PROMPT_SIZE 32
-#define UTF_BYTES 4
+#define UTF8_BYTES 4
 
 enum {
 	VT_DEF,
@@ -33,9 +33,9 @@ enum {
 
 static char *buf_slice(char *src, int pivot);
 static void ln_redraw(const char *str, size_t nbytes);
-static int utf_nbytes(const char *utf);
+static int utf8_nbytes(const char *utf8);
 
-static int term_key(char *utf);
+static int term_key(char *utf8);
 static int term_esc(char *seq);
 
 static size_t key_up(char *buf, size_t size, size_t pos);
@@ -46,7 +46,7 @@ static size_t key_home(size_t pos);
 static size_t key_end(char *buf, size_t pos);
 
 static size_t chr_delete(char *buf, size_t pos, int bsmode);
-static size_t chr_ins(char *buf, size_t pos, size_t size, const char *utf);
+static size_t chr_ins(char *buf, size_t pos, size_t size, const char *utf8);
 static void chr_return(void);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
@@ -86,13 +86,13 @@ ln_redraw(const char *str, size_t nbytes)
 }
 
 static int
-utf_nbytes(const char *utf)
+utf8_nbytes(const char *utf8)
 {
-	if (utf[0] >= '\xc0' && utf[0] <= '\xdf')
+	if (utf8[0] >= '\xc0' && utf8[0] <= '\xdf')
 		return 2;
-	else if (utf[0] >= '\xe0' && utf[0] <= '\xef')
+	else if (utf8[0] >= '\xe0' && utf8[0] <= '\xef')
 		return 3;
-	else if (utf[0] >= '\xf0' && utf[0] <= '\xf7')
+	else if (utf8[0] >= '\xf0' && utf8[0] <= '\xf7')
 		return 4;
 
 	return 1;
@@ -118,11 +118,11 @@ term_esc(char *seq)
 }
 
 static int
-term_key(char *utf)
+term_key(char *utf8)
 {
 	char key;
 	char seq[3];
-	int nread;
+	int nread, nbytes;
 
 	while ((nread = read(STDIN_FILENO, &key, 1)) != 1) {
 		if (nread == -1)
@@ -164,23 +164,12 @@ term_key(char *utf)
 		return VT_EOF;
 	} else if (key == '\x0a') {
 		return VT_RET;
-	} else if (key >= '\xc0' && key <= '\xdf') {
-		/* 2 byte UTF-8 past ASCII */
-		utf[0] = key;
-		read(STDIN_FILENO, &utf[1], 1);
-		return VT_CHR;
-	} else if (key >= '\xe0' && key <= '\xef'){
-		/* 3 byte UTF-8 */
-		utf[0] = key;
-		read(STDIN_FILENO, utf + 1, 2);
-		return VT_CHR;
-	} else if (key >= '\xf0' && key <= '\xf7') {
-		/* 4 byte UTF-8 */
-		utf[0] = key;
-		read(STDIN_FILENO, utf + 1, 3);
+	} else if ((nbytes = utf8_nbytes(&key)) > 1) {
+		utf8[0] = key;
+		read(STDIN_FILENO, utf8 + 1, nbytes - 1);
 		return VT_CHR;
 	} else {
-		utf[0] = key;
+		utf8[0] = key;
 		return VT_CHR;
 	}
 }
@@ -320,7 +309,7 @@ chr_delete(char *buf, size_t pos, int bsmode)
 }
 
 static size_t
-chr_ins(char *buf, size_t pos, size_t size, const char *utf)
+chr_ins(char *buf, size_t pos, size_t size, const char *utf8)
 {
 	char *suff;
 	size_t len;
@@ -333,12 +322,12 @@ chr_ins(char *buf, size_t pos, size_t size, const char *utf)
 		return pos;
 
 	len = strlen(suff);
-	nbytes = utf_nbytes(utf);
+	nbytes = utf8_nbytes(utf8);
 	for (i = 0; i < nbytes; ++i) {
-		buf[pos] = utf[i];
+		buf[pos] = utf8[i];
 		++pos;
 		strlcpy(buf + pos, suff, len + 1);
-		write(STDOUT_FILENO, &utf[i], 1);
+		write(STDOUT_FILENO, &utf8[i], 1);
 	}
 	ln_redraw(suff, len);
 
@@ -362,7 +351,7 @@ chr_return(void)
 int
 sline(char *buf, int size, const char *init)
 {
-	char utf[UTF_BYTES];
+	char utf8[UTF8_BYTES];
 	int key;
 	size_t pos, wsize;
 
@@ -386,9 +375,9 @@ sline(char *buf, int size, const char *init)
 		pos = strlen(buf);
 	}
 
-	memset(utf, 0, UTF_BYTES);
+	memset(utf8, 0, UTF8_BYTES);
 	hist_pos = hist_curr;
-	while ((key = term_key(utf)) != -1) {
+	while ((key = term_key(utf8)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
 			pos = chr_delete(buf, pos, 1);
@@ -424,7 +413,7 @@ sline(char *buf, int size, const char *init)
 			pos = key_end(buf, pos);
 			break;
 		case VT_CHR:
-			pos = chr_ins(buf, pos, wsize, utf);
+			pos = chr_ins(buf, pos, wsize, utf8);
 			hist_pos = hist_curr;
 			break;
 		default:
