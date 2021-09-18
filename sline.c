@@ -31,25 +31,27 @@ enum {
 	VT_END
 };
 
-static char *buf_slice(char *src, int pivot);
+static char *buf_slice(char *src, int pivot, size_t size);
 static void ln_redraw(const char *str, size_t nbytes);
 static int utf8_nbytes(const char *utf8);
+static int utf8_nbytes_r(const char *utf8);
 
 static int term_key(char *utf8);
 static int term_esc(char *seq);
 
-static size_t key_up(char *buf, size_t size, size_t pos);
-static size_t key_down(char *buf, size_t size, size_t pos);
-static size_t key_left(size_t pos);
-static size_t key_right(char *buf, size_t pos);
-static size_t key_home(size_t pos);
-static size_t key_end(char *buf, size_t pos);
+static size_t key_up(char *buf, size_t size);
+static size_t key_down(char *buf, size_t size);
+static size_t key_left(char *buf);
+static size_t key_right(char *buf);
+static size_t key_home(void);
+static size_t key_end(char *buf);
 
-static size_t chr_delete(char *buf, size_t pos, int bsmode);
-static size_t chr_ins(char *buf, size_t pos, size_t size, const char *utf8);
+static size_t chr_delete(char *buf, size_t size, int bsmode);
+static size_t chr_ins(char *buf, size_t size, const char *utf8);
 static void chr_return(void);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
+static size_t pos, buf_i;
 static int sline_history = 1; /* History feature on by default */
 static struct termios old, term;
 
@@ -58,18 +60,19 @@ int sline_err = SLINE_ERR_DEF;
 /* Auxiliary VT100 related subroutines */
 
 static char *
-buf_slice(char *src, int pivot)
+buf_slice(char *src, int pivot, size_t size)
 {
-	char *suff;
-	size_t len;
+	char *suff, *ptr;
+	size_t ptr_size;
 
-	len = strlen(src);
+	ptr = src + pivot;
+	ptr_size = strlen(ptr) + 1;
 
-	if ((suff = calloc(len + 1, sizeof(char))) == NULL)
+	if ((suff = calloc(size, sizeof(char))) == NULL)
 		return NULL;
 
-	strlcpy(suff, src + pivot, len - pivot + 1);
-	memset(src + pivot, 0, len - pivot);
+	strlcpy(suff, ptr, ptr_size);
+	memset(ptr, 0, ptr_size);
 
 	return suff;
 }
@@ -96,6 +99,21 @@ utf8_nbytes(const char *utf8)
 		return 4;
 
 	return 1;
+}
+
+static int
+utf8_nbytes_r(const char *utf8)
+{
+	const char *ptr;
+	int nbytes;
+
+	for (ptr = utf8; (nbytes = utf8_nbytes(ptr)) == 1; --ptr) {
+		/* We stop if we're an ASCII char */
+		if ((unsigned char)ptr[0] <= '\x7f')
+			return 1;
+	}
+
+	return nbytes;
 }
 
 static int
@@ -175,7 +193,7 @@ term_key(char *utf8)
 }
 
 static size_t
-key_up(char *buf, size_t size, size_t pos)
+key_up(char *buf, size_t size)
 {
 	const char *hist;
 	size_t len;
@@ -191,7 +209,7 @@ key_up(char *buf, size_t size, size_t pos)
 
 	strlcpy(buf, hist, size);
 
-	pos = key_home(pos);
+	pos = key_home();
 	len = strlen(hist);
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, len);
@@ -200,7 +218,7 @@ key_up(char *buf, size_t size, size_t pos)
 }
 
 static size_t
-key_down(char *buf, size_t size, size_t pos)
+key_down(char *buf, size_t size)
 {
 	const char *hist;
 	size_t len;
@@ -218,7 +236,7 @@ key_down(char *buf, size_t size, size_t pos)
 
 	strlcpy(buf, hist, size);
 
-	pos = key_home(pos);
+	pos = key_home();
 	len = strlen(hist);
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, len);
@@ -227,33 +245,44 @@ key_down(char *buf, size_t size, size_t pos)
 }
 
 static size_t
-key_left(size_t pos)
+key_left(char *buf)
 {
-	if (pos > 0) {
-		--pos;
-		write(STDOUT_FILENO, "\x1b[D", 3);
-	}
+	int nbytes;
+
+	if (buf_i == 0)
+		return pos;
+
+	nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
+	buf_i -= nbytes;
+	--pos;
+	write(STDOUT_FILENO, "\x1b[D", 3);
 
 	return pos;
 }
 
 static size_t
-key_right(char *buf, size_t pos)
+key_right(char *buf)
 {
-	if (pos < strlen(buf)) {
-		++pos;
-		write(STDOUT_FILENO, "\x1b[C", 3);
-	}
+	int nbytes;
+
+	if (buf[buf_i] == '\0')
+		return pos;
+
+	nbytes = utf8_nbytes(&buf[buf_i]);
+	buf_i += nbytes;
+	++pos;
+	write(STDOUT_FILENO, "\x1b[C", 3);
 	
 	return pos;
 }
 
 static size_t
-key_home(size_t pos)
+key_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
 
-	if (pos > 0) {
+	if (buf_i > 0) {
+		buf_i = 0;
 		snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", pos);
 		write(STDOUT_FILENO, cmd, strlen(cmd));
 	}
@@ -263,41 +292,56 @@ key_home(size_t pos)
 
 
 static size_t
-key_end(char *buf, size_t pos)
+key_end(char *buf)
 {
-	size_t len;
+	int i;
+	size_t len, end_pos;
 	char cmd[CURSOR_BUF_SIZE];
 
-	len = strlen(buf);
-	if (pos < len) {
-		snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", len - pos);
-		write(STDOUT_FILENO, cmd, strlen(cmd));
+	if (buf[buf_i] == '\0')
+		return pos;
+
+	i = 0;
+	end_pos = 0;
+	while (buf[i] != '\0') {
+		++end_pos;
+		i += utf8_nbytes(&buf[i]);
 	}
 
-	return len;
+	len = strlen(buf);
+	buf_i = len;
+	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", end_pos - pos);
+	write(STDOUT_FILENO, cmd, strlen(cmd));
+
+	return end_pos;
 }
 
 static size_t
-chr_delete(char *buf, size_t pos, int bsmode)
+chr_delete(char *buf, size_t size, int bsmode)
 {
+	/* 
+	 * TODO: This is probably incorrect code at this point. Will tackle 
+	 * later, when insertion and navigation are done.
+	 */
+
 	char *suff, *suff_new;
+	int nbytes;
 	size_t len;
+
+	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
+		return pos;
+
+	nbytes = utf8_nbytes(&suff[0]);
+	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
+	len = strlen(suff_new);
+	strlcpy(&buf[strlen(buf)], suff_new, len + 1);
 
 	if (bsmode > 0) {
 		if (pos == 0)
 			return pos;
 		--pos;
-	}
-
-	if ((suff = buf_slice(buf, pos)) == NULL)
-		return pos;
-
-	suff_new = suff + 1; /* Deleting character from suff; way safer */
-	len = strlen(suff_new);
-	strlcpy(buf + pos, suff_new, len + 1);
-
-	if (bsmode > 0)
 		write(STDOUT_FILENO, "\b", 1);
+	}
 
 	ln_redraw(suff_new, len);
 
@@ -309,7 +353,7 @@ chr_delete(char *buf, size_t pos, int bsmode)
 }
 
 static size_t
-chr_ins(char *buf, size_t pos, size_t size, const char *utf8)
+chr_ins(char *buf, size_t size, const char *utf8)
 {
 	char *suff;
 	size_t len;
@@ -318,17 +362,18 @@ chr_ins(char *buf, size_t pos, size_t size, const char *utf8)
 	if (pos >= size)
 		return pos;
 
-	if ((suff = buf_slice(buf, pos)) == NULL)
+	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
 		return pos;
 
 	len = strlen(suff);
 	nbytes = utf8_nbytes(utf8);
-	for (i = 0; i < nbytes; ++i) {
-		buf[pos] = utf8[i];
-		++pos;
-		strlcpy(buf + pos, suff, len + 1);
-		write(STDOUT_FILENO, &utf8[i], 1);
-	}
+	for (i = 0; i < nbytes; ++i)
+		buf[strlen(buf)] = utf8[i];
+
+	strlcpy(&buf[strlen(buf)], suff, len + 1);
+	buf_i += nbytes;
+	write(STDOUT_FILENO, utf8, nbytes);
+	++pos;
 	ln_redraw(suff, len);
 
 	free(suff);
@@ -353,7 +398,7 @@ sline(char *buf, int size, const char *init)
 {
 	char utf8[UTF8_BYTES];
 	int key;
-	size_t pos, wsize;
+	size_t wsize;
 
 	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
 
@@ -365,6 +410,7 @@ sline(char *buf, int size, const char *init)
 	wsize = size - 1; 
 	memset(buf, 0, size);
 	pos = 0;
+	buf_i = 0;
 	if (init != NULL) {
 		/* 
 		 * Using size instead of wsize because we're already given a
@@ -380,11 +426,11 @@ sline(char *buf, int size, const char *init)
 	while ((key = term_key(utf8)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
-			pos = chr_delete(buf, pos, 1);
+			pos = chr_delete(buf, size, 1);
 			hist_pos = hist_curr;
 			break;
 		case VT_DLT:
-			pos = chr_delete(buf, pos, 0);
+			pos = chr_delete(buf, size, 0);
 			hist_pos = hist_curr;
 			break;
 		case VT_EOF:
@@ -395,31 +441,33 @@ sline(char *buf, int size, const char *init)
 			chr_return();
 			return 0;
 		case VT_UP:
-			pos = key_up(buf, wsize, pos);
+			pos = key_up(buf, wsize);
 			break;
 		case VT_DWN:
-			pos = key_down(buf, wsize, pos);
+			pos = key_down(buf, wsize);
 			break;
 		case VT_LFT:
-			pos = key_left(pos);
+			pos = key_left(buf);
 			break;
 		case VT_RGHT:
-			pos = key_right(buf, pos);
+			pos = key_right(buf);
 			break;
 		case VT_HOME:
-			pos = key_home(pos);
+			pos = key_home();
 			break;
 		case VT_END:
-			pos = key_end(buf, pos);
+			pos = key_end(buf);
 			break;
 		case VT_CHR:
-			pos = chr_ins(buf, pos, wsize, utf8);
+			pos = chr_ins(buf, wsize, utf8);
 			hist_pos = hist_curr;
 			break;
 		default:
 			/* Silently ignore everything that isn't caught. */
 			break;
 		}
+
+		memset(utf8, 0, UTF8_BYTES);
 	}
 
 	/* If we reach this, then term_key() returned -1 */
