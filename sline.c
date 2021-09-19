@@ -32,6 +32,7 @@ enum {
 };
 
 static char *buf_slice(char *src, int pivot, size_t size);
+static size_t cursor_end_pos(const char *buf);
 static void ln_redraw(const char *str, size_t nbytes);
 static int utf8_nbytes(const char *utf8);
 static int utf8_nbytes_r(const char *utf8);
@@ -75,6 +76,22 @@ buf_slice(char *src, int pivot, size_t size)
 	memset(ptr, 0, ptr_size);
 
 	return suff;
+}
+
+static size_t
+cursor_end_pos(const char *buf)
+{
+	int i;
+	size_t end_pos;
+
+	i = 0;
+	end_pos = 0;
+	while (buf[i] != '\0') {
+		++end_pos;
+		i += utf8_nbytes(&buf[i]);
+	}
+
+	return end_pos;
 }
 
 static void
@@ -196,7 +213,6 @@ static size_t
 key_up(char *buf, size_t size)
 {
 	const char *hist;
-	size_t len;
 
 	if (sline_history == 0)
 		return pos;
@@ -210,18 +226,18 @@ key_up(char *buf, size_t size)
 	strlcpy(buf, hist, size);
 
 	pos = key_home();
-	len = strlen(hist);
 	write(STDOUT_FILENO, "\x1b[0K", 4);
-	write(STDOUT_FILENO, hist, len);
+	write(STDOUT_FILENO, hist, strlen(hist));
 
-	return len;
+	buf_i = strlen(buf);
+
+	return cursor_end_pos(buf);
 }
 
 static size_t
 key_down(char *buf, size_t size)
 {
 	const char *hist;
-	size_t len;
 
 	if (sline_history == 0)
 		return pos;
@@ -237,11 +253,12 @@ key_down(char *buf, size_t size)
 	strlcpy(buf, hist, size);
 
 	pos = key_home();
-	len = strlen(hist);
 	write(STDOUT_FILENO, "\x1b[0K", 4);
-	write(STDOUT_FILENO, hist, len);
+	write(STDOUT_FILENO, hist, strlen(hist));
 	
-	return len; /* len is the new pos we output */
+	buf_i = strlen(buf);
+
+	return cursor_end_pos(buf);
 }
 
 static size_t
