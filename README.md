@@ -3,7 +3,7 @@
 sline is a simple library that easily allows programs to as for user input 
 with support for line-editing and command history. It implements a simple
 VT100 compatible driver that makes it totally independent of third-party 
-libraries.
+libraries. sline also supports UTF-8 in user input.
 
 sline was originally part of [scalc](https://sr.ht/~arivigo/scalc).
 
