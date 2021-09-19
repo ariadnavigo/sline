@@ -328,17 +328,24 @@ chr_delete(char *buf, size_t size, int bsmode)
 	int nbytes;
 	size_t len;
 
+	if (bsmode > 0) {
+		if (buf_i == 0)
+			return pos;
+
+		nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
+		buf_i -= nbytes;
+	} else {
+		nbytes = utf8_nbytes_r(&buf[buf_i]);
+	}
+
 	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
 		return pos;
 
-	nbytes = utf8_nbytes(&suff[0]);
 	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
 	len = strlen(suff_new);
 	strlcpy(&buf[strlen(buf)], suff_new, len + 1);
 
 	if (bsmode > 0) {
-		if (pos == 0)
-			return pos;
 		--pos;
 		write(STDOUT_FILENO, "\b", 1);
 	}
