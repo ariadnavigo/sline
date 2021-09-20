@@ -223,6 +223,7 @@ key_up(char *buf, size_t size)
 	if ((hist = history_get(hist_pos)) == NULL)
 		return pos;
 
+	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
 
 	pos = key_home();
@@ -250,6 +251,7 @@ key_down(char *buf, size_t size)
 	if ((hist = history_get(hist_pos)) == NULL)
 		return pos;
 
+	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
 
 	pos = key_home();
