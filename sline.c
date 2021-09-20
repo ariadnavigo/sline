@@ -171,10 +171,10 @@ term_key(char *utf8)
 		if (seq[1] == '3' && seq[2] == '~')
 			return VT_DLT;
 
-		if (seq[1] == '7' && seq[2] == '~')
+		if ((seq[1] == '1' || seq[1] == '7') && seq[2] == '~')
 			return VT_HOME;
 
-		if (seq[1] == '8' && seq[2] == '~')
+		if ((seq[1] == '4' || seq[1] == '8') && seq[2] == '~')
 			return VT_END;
 
 		switch (seq[1]) {
