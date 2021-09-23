@@ -40,15 +40,15 @@ static int utf8_nbytes_r(const char *utf8);
 static int term_key(char *utf8);
 static int term_esc(char *seq);
 
-static size_t key_up(char *buf, size_t size);
-static size_t key_down(char *buf, size_t size);
-static size_t key_left(char *buf);
-static size_t key_right(char *buf);
-static size_t key_home(void);
-static size_t key_end(char *buf);
+static void key_up(char *buf, size_t size);
+static void key_down(char *buf, size_t size);
+static void key_left(char *buf);
+static void key_right(char *buf);
+static void key_home(void);
+static void key_end(char *buf);
 
-static size_t chr_delete(char *buf, size_t size, int bsmode);
-static size_t chr_ins(char *buf, size_t size, const char *utf8);
+static void chr_delete(char *buf, size_t size, int bsmode);
+static void chr_ins(char *buf, size_t size, const char *utf8);
 static void chr_return(void);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
@@ -209,39 +209,38 @@ term_key(char *utf8)
 	}
 }
 
-static size_t
+static void
 key_up(char *buf, size_t size)
 {
 	const char *hist;
 
 	if (sline_history == 0)
-		return pos;
+		return;
 
 	if (hist_pos > 0)
 		--hist_pos;
 
 	if ((hist = history_get(hist_pos)) == NULL)
-		return pos;
+		return;
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
 
-	pos = key_home();
+	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
 
 	buf_i = strlen(buf);
-
-	return cursor_end_pos(buf);
+	pos = cursor_end_pos(buf);
 }
 
-static size_t
+static void
 key_down(char *buf, size_t size)
 {
 	const char *hist;
 
 	if (sline_history == 0)
-		return pos;
+		return;
 
 	if (hist_pos < hist_curr)
 		++hist_pos;
@@ -249,53 +248,48 @@ key_down(char *buf, size_t size)
 		hist_pos = hist_curr;
 
 	if ((hist = history_get(hist_pos)) == NULL)
-		return pos;
+		return;
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
 
-	pos = key_home();
+	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
 	
 	buf_i = strlen(buf);
-
-	return cursor_end_pos(buf);
+	pos = cursor_end_pos(buf);
 }
 
-static size_t
+static void
 key_left(char *buf)
 {
 	int nbytes;
 
 	if (buf_i == 0)
-		return pos;
+		return;
 
 	nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
 	buf_i -= nbytes;
 	--pos;
 	write(STDOUT_FILENO, "\x1b[D", 3);
-
-	return pos;
 }
 
-static size_t
+static void
 key_right(char *buf)
 {
 	int nbytes;
 
 	if (buf[buf_i] == '\0')
-		return pos;
+		return;
 
 	nbytes = utf8_nbytes(&buf[buf_i]);
 	buf_i += nbytes;
 	++pos;
 	write(STDOUT_FILENO, "\x1b[C", 3);
-	
-	return pos;
 }
 
-static size_t
+static void
 key_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
@@ -306,11 +300,11 @@ key_home(void)
 		write(STDOUT_FILENO, cmd, strlen(cmd));
 	}
 
-	return 0;
+	pos = 0;
 }
 
 
-static size_t
+static void
 key_end(char *buf)
 {
 	int i;
@@ -318,7 +312,7 @@ key_end(char *buf)
 	char cmd[CURSOR_BUF_SIZE];
 
 	if (buf[buf_i] == '\0')
-		return pos;
+		return;
 
 	i = 0;
 	end_pos = 0;
@@ -332,24 +326,19 @@ key_end(char *buf)
 	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", end_pos - pos);
 	write(STDOUT_FILENO, cmd, strlen(cmd));
 
-	return end_pos;
+	pos = end_pos;
 }
 
-static size_t
+static void
 chr_delete(char *buf, size_t size, int bsmode)
 {
-	/* 
-	 * TODO: This is probably incorrect code at this point. Will tackle 
-	 * later, when insertion and navigation are done.
-	 */
-
 	char *suff, *suff_new;
 	int nbytes;
 	size_t len;
 
 	if (bsmode > 0) {
 		if (buf_i == 0)
-			return pos;
+			return;
 
 		nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
 		buf_i -= nbytes;
@@ -358,7 +347,7 @@ chr_delete(char *buf, size_t size, int bsmode)
 	}
 
 	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
-		return pos;
+		return;
 
 	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
 	len = strlen(suff_new);
@@ -374,11 +363,9 @@ chr_delete(char *buf, size_t size, int bsmode)
 	free(suff);
 
 	history_set(hist_curr, buf);
-
-	return pos;
 }
 
-static size_t
+static void
 chr_ins(char *buf, size_t size, const char *utf8)
 {
 	char *suff;
@@ -386,10 +373,10 @@ chr_ins(char *buf, size_t size, const char *utf8)
 	int i, nbytes;
 
 	if (pos >= size)
-		return pos;
+		return;
 
 	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
-		return pos;
+		return;
 
 	len = strlen(suff);
 	nbytes = utf8_nbytes(utf8);
@@ -405,8 +392,6 @@ chr_ins(char *buf, size_t size, const char *utf8)
 	free(suff);
 
 	history_set(hist_curr, buf);
-	
-	return pos;
 }
 
 static void
@@ -452,11 +437,11 @@ sline(char *buf, int size, const char *init)
 	while ((key = term_key(utf8)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
-			pos = chr_delete(buf, size, 1);
+			chr_delete(buf, size, 1);
 			hist_pos = hist_curr;
 			break;
 		case VT_DLT:
-			pos = chr_delete(buf, size, 0);
+			chr_delete(buf, size, 0);
 			hist_pos = hist_curr;
 			break;
 		case VT_EOF:
@@ -467,25 +452,25 @@ sline(char *buf, int size, const char *init)
 			chr_return();
 			return 0;
 		case VT_UP:
-			pos = key_up(buf, wsize);
+			key_up(buf, wsize);
 			break;
 		case VT_DWN:
-			pos = key_down(buf, wsize);
+			key_down(buf, wsize);
 			break;
 		case VT_LFT:
-			pos = key_left(buf);
+			key_left(buf);
 			break;
 		case VT_RGHT:
-			pos = key_right(buf);
+			key_right(buf);
 			break;
 		case VT_HOME:
-			pos = key_home();
+			key_home();
 			break;
 		case VT_END:
-			pos = key_end(buf);
+			key_end(buf);
 			break;
 		case VT_CHR:
-			pos = chr_ins(buf, wsize, utf8);
+			chr_ins(buf, wsize, utf8);
 			hist_pos = hist_curr;
 			break;
 		default:
