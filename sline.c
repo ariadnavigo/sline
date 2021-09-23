@@ -225,12 +225,11 @@ key_up(char *buf, size_t size)
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
+	buf_i = strlen(buf);
 
 	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
-
-	buf_i = strlen(buf);
 	pos = cursor_end_pos(buf);
 }
 
@@ -252,12 +251,11 @@ key_down(char *buf, size_t size)
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
+	buf_i = strlen(buf);
 
 	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
-	
-	buf_i = strlen(buf);
 	pos = cursor_end_pos(buf);
 }
 
@@ -271,8 +269,9 @@ key_left(char *buf)
 
 	nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
 	buf_i -= nbytes;
-	--pos;
+
 	write(STDOUT_FILENO, "\x1b[D", 3);
+	--pos;
 }
 
 static void
@@ -285,8 +284,9 @@ key_right(char *buf)
 
 	nbytes = utf8_nbytes(&buf[buf_i]);
 	buf_i += nbytes;
-	++pos;
+
 	write(STDOUT_FILENO, "\x1b[C", 3);
+	++pos;
 }
 
 static void
@@ -294,12 +294,13 @@ key_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
 
-	if (buf_i > 0) {
-		buf_i = 0;
-		snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", pos);
-		write(STDOUT_FILENO, cmd, strlen(cmd));
-	}
+	if (buf_i == 0)
+		return;
 
+	buf_i = 0;
+
+	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", pos);
+	write(STDOUT_FILENO, cmd, strlen(cmd));
 	pos = 0;
 }
 
@@ -308,7 +309,7 @@ static void
 key_end(char *buf)
 {
 	int i;
-	size_t len, end_pos;
+	size_t end_pos;
 	char cmd[CURSOR_BUF_SIZE];
 
 	if (buf[buf_i] == '\0')
@@ -321,11 +322,10 @@ key_end(char *buf)
 		i += utf8_nbytes(&buf[i]);
 	}
 
-	len = strlen(buf);
-	buf_i = len;
+	buf_i = strlen(buf);
+
 	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", end_pos - pos);
 	write(STDOUT_FILENO, cmd, strlen(cmd));
-
 	pos = end_pos;
 }
 
@@ -354,10 +354,9 @@ chr_delete(char *buf, size_t size, int bsmode)
 	strlcpy(&buf[strlen(buf)], suff_new, len + 1);
 
 	if (bsmode > 0) {
-		--pos;
 		write(STDOUT_FILENO, "\b", 1);
+		--pos;
 	}
-
 	ln_redraw(suff_new, len);
 
 	free(suff);
@@ -385,6 +384,7 @@ chr_ins(char *buf, size_t size, const char *utf8)
 
 	strlcpy(&buf[strlen(buf)], suff, len + 1);
 	buf_i += nbytes;
+
 	write(STDOUT_FILENO, utf8, nbytes);
 	++pos;
 	ln_redraw(suff, len);
