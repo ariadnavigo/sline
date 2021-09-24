@@ -1,6 +1,7 @@
 /* See LICENSE for copyright and license details. */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "sline.h"
 
@@ -15,6 +16,7 @@ main(void)
 	int cnt, sline_stat;
 
 	printf("sline_test: compiled with sline %s.\n", sline_version());
+	printf("Type 'exit', 'quit', or Ctrl-D to exit.\n");
 
 	if (sline_setup(HISTORY_SIZE) < 0) {
 		fprintf(stderr, "sline: %s", sline_errmsg());
@@ -28,6 +30,10 @@ main(void)
 
 		if ((sline_stat = sline(buf, BUF_SIZE, INIT_STR)) < 0)
 			goto exit;
+
+		if (strncmp(buf, "exit", BUF_SIZE) == 0 
+		    || strncmp(buf, "quit", BUF_SIZE) == 0)
+			break;
 
 		printf("Input was: %s\n", buf);
 	}
