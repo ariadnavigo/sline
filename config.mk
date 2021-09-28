@@ -1,5 +1,5 @@
 # sline version
-VERSION = 0.6.0
+VERSION = 0.6.1
 
 # Customize below to your needs
 
