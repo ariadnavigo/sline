@@ -225,11 +225,12 @@ key_up(char *buf, size_t size)
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
-	buf_i = strlen(buf);
 
 	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
+
+	buf_i = strlen(buf);
 	pos = cursor_end_pos(buf);
 }
 
@@ -251,11 +252,12 @@ key_down(char *buf, size_t size)
 
 	memset(buf, 0, size);
 	strlcpy(buf, hist, size);
-	buf_i = strlen(buf);
 
 	key_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, hist, strlen(hist));
+
+	buf_i = strlen(buf);
 	pos = cursor_end_pos(buf);
 }
 
@@ -264,7 +266,7 @@ key_left(char *buf)
 {
 	int nbytes;
 
-	if (buf_i == 0)
+	if (pos == 0)
 		return;
 
 	nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
@@ -279,7 +281,7 @@ key_right(char *buf)
 {
 	int nbytes;
 
-	if (buf[buf_i] == '\0')
+	if (pos == cursor_end_pos(buf))
 		return;
 
 	nbytes = utf8_nbytes(&buf[buf_i]);
@@ -294,7 +296,7 @@ key_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
 
-	if (buf_i == 0)
+	if (pos == 0)
 		return;
 
 	buf_i = 0;
