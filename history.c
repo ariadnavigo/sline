@@ -8,13 +8,13 @@
 #define HISTORY_SIZE 50
 
 char *history[HISTORY_SIZE];
-int hist_curr, hist_pos;
+int hist_top, hist_pos;
 size_t hist_entry_size;
 
 const char *
 history_get(int pos)
 {
-	if (pos < 0 || pos > hist_curr)
+	if (pos < 0 || pos > hist_top)
 		return NULL;
 
 	return history[pos];
@@ -23,11 +23,11 @@ history_get(int pos)
 void
 history_next(void)
 {
-	if (strlen(history[hist_curr]) == 0)
+	if (strlen(history[hist_top]) == 0)
 		return;
 
-	++hist_curr;
-	if (hist_curr >= HISTORY_SIZE)
+	++hist_top;
+	if (hist_top >= HISTORY_SIZE)
 		history_rotate();
 }
 
@@ -39,7 +39,7 @@ history_rotate(void)
 	for (i = 1; i < HISTORY_SIZE; ++i)
 		strlcpy(history[i - 1], history[i], hist_entry_size);
 
-	--hist_curr;
+	--hist_top;
 }
 
 void
@@ -53,8 +53,8 @@ history_set(int pos, const char *input)
 }
 
 void
-history_del_curr(void)
+history_del_top(void)
 {
-	--hist_curr;
-	hist_pos = hist_curr;
+	--hist_top;
+	hist_pos = hist_top;
 }

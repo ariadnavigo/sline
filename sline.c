@@ -249,10 +249,10 @@ key_down(char *buf, size_t size)
 	if (sline_history == 0)
 		return;
 
-	if (hist_pos < hist_curr)
+	if (hist_pos < hist_top)
 		++hist_pos;
 	else
-		hist_pos = hist_curr;
+		hist_pos = hist_top;
 
 	if ((hist = history_get(hist_pos)) == NULL)
 		return;
@@ -363,9 +363,9 @@ chr_delete(char *buf, size_t size, int bsmode)
 	free(suff);
 
 	if (buf_i == 0)
-		history_del_curr();
+		history_del_top();
 	else
-		history_set(hist_curr, buf);
+		history_set(hist_top, buf);
 }
 
 static void
@@ -395,7 +395,7 @@ chr_ins(char *buf, size_t size, const char *utf8)
 
 	free(suff);
 
-	history_set(hist_curr, buf);
+	history_set(hist_top, buf);
 }
 
 static void
@@ -438,16 +438,16 @@ sline(char *buf, int size, const char *init)
 	}
 
 	memset(utf8, 0, UTF8_BYTES);
-	hist_pos = hist_curr;
+	hist_pos = hist_top;
 	while ((key = term_key(utf8)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
 			chr_delete(buf, size, 1);
-			hist_pos = hist_curr;
+			hist_pos = hist_top;
 			break;
 		case VT_DLT:
 			chr_delete(buf, size, 0);
-			hist_pos = hist_curr;
+			hist_pos = hist_top;
 			break;
 		case VT_EOF:
 			write(STDOUT_FILENO, "\n", 1);
@@ -476,7 +476,7 @@ sline(char *buf, int size, const char *init)
 			break;
 		case VT_CHR:
 			chr_ins(buf, wsize, utf8);
-			hist_pos = hist_curr;
+			hist_pos = hist_top;
 			break;
 		default:
 			/* Silently ignore everything that isn't caught. */
@@ -497,7 +497,7 @@ sline_end(void)
 {
 	int i;
 
-	if (sline_history == 0 || hist_curr < 0)
+	if (sline_history == 0 || hist_top < 0)
 		goto termios;
 
 	for (i = 0; i < HISTORY_SIZE; ++i) {
