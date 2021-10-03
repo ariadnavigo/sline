@@ -1,4 +1,4 @@
 *.o
 *.tar.gz
-libsline.a
+libsline.*
 sline_test

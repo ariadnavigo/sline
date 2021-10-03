@@ -1,6 +1,9 @@
 # sline version
 VERSION = 0.6.3
 
+LIBFULLNAME = libsline.so.${VERSION}
+LIBSONAME = libsline.so.0
+
 # Customize below to your needs
 
 # Paths
@@ -11,7 +14,7 @@ MANPREFIX = ${PREFIX}/man
 CPPFLAGS = -DVERSION=\"${VERSION}\" -D_POSIX_C_SOURCE=200809L
 #CFLAGS = -g -std=c99 -Wpedantic -Wall -Wextra
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra
-LDFLAGS =
+LDFLAGS = -shared -Wl,-soname,${LIBSONAME}
 
 # Compiler and linker
 CC = cc
