@@ -430,7 +430,8 @@ sline(char *buf, int size, const char *init)
 		 */
 		strlcpy(buf, init, size);
 		write(STDOUT_FILENO, buf, size);
-		pos = strlen(buf);
+		pos = cursor_end_pos(buf);
+		buf_i = strlen(buf);
 	}
 
 	memset(utf8, 0, UTF8_BYTES);
