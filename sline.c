@@ -362,7 +362,10 @@ chr_delete(char *buf, size_t size, int bsmode)
 
 	free(suff);
 
-	history_set(hist_curr, buf);
+	if (buf_i == 0)
+		history_del_curr();
+	else
+		history_set(hist_curr, buf);
 }
 
 static void

@@ -52,3 +52,9 @@ history_set(int pos, const char *input)
 	strlcpy(history[pos], input, hist_entry_size);
 }
 
+void
+history_del_curr(void)
+{
+	--hist_curr;
+	hist_pos = hist_curr;
+}
