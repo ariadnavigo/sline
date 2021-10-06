@@ -55,6 +55,9 @@ history_set(int pos, const char *input)
 void
 history_del_top(void)
 {
+	if (hist_top == 0)
+		return;
+
 	--hist_top;
 	hist_pos = hist_top;
 }
