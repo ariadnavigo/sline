@@ -45,19 +45,5 @@ history_rotate(void)
 void
 history_set(int pos, const char *input)
 {
-	/* Ignoring blank lines */
-	if (strlen(input) == 0)
-		return;
-
 	strlcpy(history[pos], input, hist_entry_size);
-}
-
-void
-history_del_top(void)
-{
-	if (hist_top == 0)
-		return;
-
-	--hist_top;
-	hist_pos = hist_top;
 }

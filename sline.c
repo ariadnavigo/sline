@@ -362,10 +362,7 @@ chr_delete(char *buf, size_t size, int bsmode)
 
 	free(suff);
 
-	if (buf_i == 0)
-		history_del_top();
-	else
-		history_set(hist_top, buf);
+	history_set(hist_top, buf);
 }
 
 static void
@@ -395,7 +392,8 @@ chr_ins(char *buf, size_t size, const char *utf8)
 
 	free(suff);
 
-	history_set(hist_top, buf);
+	if (strlen(buf) > 0)
+		history_set(hist_top, buf);
 }
 
 static void
