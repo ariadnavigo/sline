@@ -25,12 +25,6 @@ $ make
 
 Customize the build process by changing ``config.mk`` to suit your needs.
 
-### No dynamic library version support
-
-sline only provides a static library. It's out of the goals of this project to
-implement a dynamic library version of it. Static libraries allow easier
-integration into testing and are easier to deploy in general.
-
 ## Install
 
 You may install sline by running the following command as root:
@@ -39,10 +33,14 @@ You may install sline by running the following command as root:
 # make install
 ```
 
-This will install the static library under ``$PREFIX/lib``, as defined by your
-environment, or ``/usr/local/lib`` by default. Header files will be installed
-under ``${PREFIX}/include``, or ``/usr/local/include`` by default. The Makefile 
-supports the ``$DESTDIR`` variable as well.
+This will install both a static and a dynamic library under ``$PREFIX/lib``, as 
+defined by your environment, or ``/usr/local/lib`` by default. Header files 
+will be installed under ``${PREFIX}/include``, or ``/usr/local/include`` by 
+default. The Makefile supports the ``$DESTDIR`` variable as well.
+
+Depending on your platform you might need to recreate the linker cache to make
+the dynamic library available to your system. Usually, this is performed via
+``ldconfig(8)``, but refer to your system's documentation.
 
 ## API manuals
 
