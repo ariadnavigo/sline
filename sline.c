@@ -50,7 +50,7 @@ static void key_end(char *buf);
 
 static void chr_delete(char *buf, size_t size, int bsmode);
 static void chr_ins(char *buf, size_t size, const char *utf8);
-static void chr_return(void);
+static void chr_return(const char *buf);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
 static size_t pos, buf_i;
@@ -397,11 +397,13 @@ chr_ins(char *buf, size_t size, const char *utf8)
 }
 
 static void
-chr_return(void)
+chr_return(const char *buf)
 {
 	write(STDOUT_FILENO, "\n", 1);
-	if (sline_history > 0)
+	if (sline_history > 0) {
+		history_set(hist_pos, buf);
 		history_next();
+	}
 }
 
 /* Public sline API subroutines follow */
@@ -452,7 +454,7 @@ sline(char *buf, int size, const char *init)
 			sline_err = SLINE_ERR_EOF;
 			return -1;
 		case VT_RET:
-			chr_return();
+			chr_return(buf);
 			return 0;
 		case VT_UP:
 			key_up(buf, wsize);
