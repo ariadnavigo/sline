@@ -7,9 +7,6 @@ libraries. sline also supports UTF-8 in user input.
 
 sline was originally part of [scalc](https://sr.ht/~arivigo/scalc).
 
-**This software is still in a very early stage of development. Expect many
-changes in the near future!**
-
 ## Build
 
 sline requires:
