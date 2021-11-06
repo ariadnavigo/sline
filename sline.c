@@ -23,6 +23,7 @@ enum {
 	VT_DLT,
 	VT_EOF,
 	VT_RET,
+	VT_TAB, /* Tab is ignored by now. */
 	VT_UP,
 	VT_DWN,
 	VT_LFT,
@@ -214,6 +215,8 @@ term_key(char *utf8)
 		return VT_EOF;
 	} else if (key == '\x0a') {
 		return VT_RET;
+	} else if (key == '\t') {
+		return VT_TAB;
 	} else if ((nbytes = utf8_nbytes(&key)) > 1) {
 		utf8[0] = key;
 		read(STDIN_FILENO, utf8 + 1, nbytes - 1);
