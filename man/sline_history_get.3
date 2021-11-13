@@ -1,0 +1,31 @@
+.TH SLINE 3 sline\-VERSION
+.SH NAME
+.PP
+sline_history_get \- Retrieve entries from command history
+.SH SYNOPSIS
+.PP
+.B #include <sline.h>
+.PP
+.B const char 
+.BI "*sline_history_get(int " pos );
+.SH DESCRIPTION
+.PP
+.BR sline_history_get ()
+prints the command history entry at index
+.I pos
+to standard output.
+.PP
+If command history has been set using
+.BR sline_setup (3),
+commands will be recorded sequentially from index zero (0) onwards.
+.SH RETURN VALUE
+.PP
+.BR sline_history_get ()
+returns a constant string containing the entry requested 
+or
+.I NULL
+if the index points to an invalid location.
+.SH SEE ALSO
+.PP
+.BR sline (3), 
+.BR sline_setup (3)
