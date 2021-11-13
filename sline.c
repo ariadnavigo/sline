@@ -238,7 +238,7 @@ key_up(char *buf, size_t size)
 	if (hist_pos > 0)
 		--hist_pos;
 
-	if ((hist = history_get(hist_pos)) == NULL)
+	if ((hist = sline_history_get(hist_pos)) == NULL)
 		return;
 
 	ln_buf_replace(buf, size, hist);
@@ -257,7 +257,7 @@ key_down(char *buf, size_t size)
 	else
 		hist_pos = hist_top;
 
-	if ((hist = history_get(hist_pos)) == NULL)
+	if ((hist = sline_history_get(hist_pos)) == NULL)
 		return;
 
 	ln_buf_replace(buf, size, hist);
@@ -529,6 +529,15 @@ sline_errmsg(void)
 	default:
 		return "unknown error.";
 	}
+}
+
+const char *
+sline_history_get(int pos)
+{
+	if (pos < 0 || pos > hist_top)
+		return NULL;
+
+	return history[pos];
 }
 
 int

@@ -11,15 +11,6 @@ char *history[HISTORY_SIZE];
 int hist_top, hist_pos;
 size_t hist_entry_size;
 
-const char *
-history_get(int pos)
-{
-	if (pos < 0 || pos > hist_top)
-		return NULL;
-
-	return history[pos];
-}
-
 void
 history_next(void)
 {
