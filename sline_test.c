@@ -6,8 +6,13 @@
 #include "sline.h"
 
 #define BUF_SIZE 64
-#define HISTORY_SIZE 64
 #define INIT_STR NULL /* Set to a literal string to test init strings */
+
+static void
+print_err(void)
+{
+	fprintf(stderr, "sline: %s\n", sline_errmsg());
+}
 
 static void
 print_hist(void)
@@ -32,8 +37,8 @@ main(void)
 	printf("sline_test: compiled with sline %s.\n", sline_version());
 	printf("Type 'exit', 'quit', or Ctrl-D to exit.\n");
 
-	if (sline_setup(HISTORY_SIZE) < 0) {
-		fprintf(stderr, "sline: %s\n", sline_errmsg());
+	if (sline_setup(BUF_SIZE) < 0) {
+		print_err();
 		return -1;
 	}
 
@@ -58,7 +63,7 @@ main(void)
 
 exit:
 	if (sline_stat < 0 && sline_err != SLINE_ERR_EOF)
-		fprintf(stderr, "sline: %s.\n", sline_errmsg());
+		print_err();
 	sline_end();
 
 	return 0;
