@@ -63,6 +63,7 @@ At exit, it is highly advisable to call
 to restore the terminal state 
 and free all used memory. 
 .SH RETURN VALUE
+.PP
 .BR sline ()
 returns 0 if no error occurred. 
 If an error did occur, 
@@ -86,8 +87,10 @@ An unreadable character or escape sequence was found during I/O.
 .BR sline_errmsg (3)
 may be used to retrieve an error message string to be presented to the user.
 .SH SEE ALSO
+.PP
 .BR sline_errmsg (3), 
 .BR sline_end (3), 
+.BR sline_history_get (3),
 .BR sline_setup (3), 
 .BR sline_set_prompt (3),
 .BR sline_version (3)
