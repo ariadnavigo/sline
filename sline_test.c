@@ -19,7 +19,7 @@ main(void)
 	printf("Type 'exit', 'quit', or Ctrl-D to exit.\n");
 
 	if (sline_setup(HISTORY_SIZE) < 0) {
-		fprintf(stderr, "sline: %s", sline_errmsg());
+		fprintf(stderr, "sline: %s.\n", sline_errmsg());
 		return -1;
 	}
 
