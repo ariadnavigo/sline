@@ -41,7 +41,7 @@ sline_test: options libsline.a sline.h sline_test.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ sline_test.c libsline.a
 
 clean:
-	rm -f libsline.a ${LIBFULLNAME} sline_test ${OBJ}
+	rm -f libsline.* sline_test ${OBJ}
 
 install-man:
 	mkdir -p ${DESTDIR}${MANPREFIX}/man3
