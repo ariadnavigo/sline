@@ -7,11 +7,11 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "history.h"
 #include "sline.h"
 #include "strlcpy.h"
 
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
+#define HISTORY_SIZE 50
 #define SLINE_PROMPT_DEFAULT "> " 
 #define SLINE_PROMPT_SIZE 32
 #define UTF8_BYTES 4
@@ -53,8 +53,14 @@ static void chr_delete(char *buf, size_t size, int bsmode);
 static void chr_ins(char *buf, size_t size, const char *utf8);
 static void chr_return(const char *buf);
 
+static void history_next(void);
+static void history_rotate(void);
+static void history_set(int pos, const char *input);
+
 static char sline_prompt[SLINE_PROMPT_SIZE];
-static size_t pos, buf_i;
+static char *history[HISTORY_SIZE];
+static size_t hist_entry_size, pos, buf_i;
+static int hist_top, hist_pos;
 static int sline_history = 1; /* History feature on by default */
 static struct termios old, term;
 
@@ -407,6 +413,34 @@ chr_return(const char *buf)
 		history_set(hist_pos, buf);
 		history_next();
 	}
+}
+
+static void
+history_next(void)
+{
+	if (strlen(history[hist_top]) == 0)
+		return;
+
+	++hist_top;
+	if (hist_top >= HISTORY_SIZE)
+		history_rotate();
+}
+
+static void
+history_rotate(void)
+{
+	int i;
+
+	for (i = 1; i < HISTORY_SIZE; ++i)
+		strlcpy(history[i - 1], history[i], hist_entry_size);
+
+	--hist_top;
+}
+
+static void
+history_set(int pos, const char *input)
+{
+	strlcpy(history[pos], input, hist_entry_size);
 }
 
 /* Public sline API subroutines follow */
