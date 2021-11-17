@@ -39,6 +39,13 @@ Depending on your platform you might need to recreate the linker cache to make
 the dynamic library available to your system. Usually, this is performed via
 ``ldconfig(8)``, but refer to your system's documentation.
 
+sline is fully implemented in one single module with one single associated
+header, namely ``sline.c`` and ``sline.h``, respectively. This also makes the
+library easily used as-is by including it as a module into your project. If
+you want to follow this route, make sure your project has access to a
+compatible implementation of ``strlcpy()`` or make use of the one included in 
+sline itself.
+
 ## API manuals
 
 sline's API is very simple. You may refer to the sline(3) manual page for an
