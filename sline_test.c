@@ -8,6 +8,9 @@
 #define BUF_SIZE 64
 #define INIT_STR NULL /* Set to a literal string to test init strings */
 
+static void print_err(void);
+static void print_hist(void);
+
 static void
 print_err(void)
 {
