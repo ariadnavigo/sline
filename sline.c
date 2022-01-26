@@ -1,5 +1,6 @@
 /* See LICENSE for copyright and license details. */
 
+#include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,7 @@ enum {
 	VT_BKSPC,
 	VT_DLT,
 	VT_EOF,
+	VT_INT,
 	VT_RET,
 	VT_TAB, /* Tab is ignored by now. */
 	VT_UP,
@@ -217,8 +219,10 @@ term_key(char *utf8)
 		}
 	} else if (key == '\x7f') {
 		return VT_BKSPC;
-	} else if (key == '\x03' || key == '\x04') {
+	} else if (key == '\x04') {
 		return VT_EOF;
+	} else if (key == '\x03') {
+		return VT_INT;
 	} else if (key == '\x0a') {
 		return VT_RET;
 	} else if (key == '\t') {
@@ -490,6 +494,10 @@ sline(char *buf, int size, const char *init)
 			write(STDOUT_FILENO, "\n", 1);
 			sline_err = SLINE_ERR_EOF;
 			return -1;
+		case VT_INT:
+			/* Fire SIGINT */
+			raise(SIGINT);
+			break;
 		case VT_RET:
 			chr_return(buf);
 			return 0;
