@@ -19,20 +19,16 @@ options:
 	@echo "CC       = ${CC}"
 	@echo
 
-sline.o: sline.h strlcpy.h
-
-strlcpy.o: strlcpy.h
-
-${OBJ}: config.mk
-
 .c.o:
 	${CC} ${CPPFLAGS} ${CFLAGS} -fPIC -c -o $@ $<
 
-libsline.a: ${OBJ}
-	ar -rcs $@ ${OBJ}
+${OBJ}: config.mk
 
 ${LIBFULLNAME}: ${OBJ}
 	${CC} ${LDFLAGS} -o $@ ${OBJ}
+
+libsline.a: ${OBJ}
+	ar -rcs $@ ${OBJ}
 
 # sline_test: Test program which will always use the *static* development 
 # version of sline as compiled in the source directory, never the library 
