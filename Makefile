@@ -33,7 +33,7 @@ libsline.a: ${OBJ}
 # sline_test: Test program which will always use the *static* development 
 # version of sline as compiled in the source directory, never the library 
 # installed on the system. This program isn't installed by `make install'.
-sline_test: options libsline.a sline.h sline_test.c
+sline_test: options libsline.a sline_test.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ sline_test.c libsline.a
 
 clean:
