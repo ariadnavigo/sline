@@ -7,6 +7,16 @@ libraries. sline also supports UTF-8 in user input.
 
 sline was originally part of [scalc](https://sr.ht/~arivigo/scalc).
 
+## Basic usage
+
+A basic use example for sline is provided as ``sline_test.c`` in this 
+repository, but in a nutshell, after setting up the terminal with 
+``sline_setup()``, ``sline()`` will read a line from standard input while 
+providing the user with  line-editing features.
+
+You may check the ``sline(3)`` and all related manpages cited under its
+``SEE ALSO`` section for further usage information.  
+
 ## Build
 
 sline requires:
@@ -45,12 +55,6 @@ library easily used as-is by including it as a module into your project. If
 you want to follow this route, make sure your project has access to a
 compatible implementation of ``strlcpy()`` or make use of the one included in 
 sline itself.
-
-## API manuals
-
-sline's API is very simple. You may refer to the sline(3) manual page for an
-overview on how to use its main subroutine. Other subroutines are listed under 
-the _See also_ section on that manual page.
 
 ## Contributing
 
