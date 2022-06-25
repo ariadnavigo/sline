@@ -1,7 +1,7 @@
 .TH SLINE 3 sline\-VERSION
 .SH NAME
 .PP
-sline_history_get \- Retrieve entries from command history
+sline_history_get \- Retrieve entries from user input history
 .SH SYNOPSIS
 .PP
 .B #include <sline.h>
@@ -11,13 +11,13 @@ sline_history_get \- Retrieve entries from command history
 .SH DESCRIPTION
 .PP
 .BR sline_history_get ()
-prints the command history entry at index
+prints the user input history entry at index
 .I pos
 to standard output.
 .PP
-If command history has been set using
+If user input history has been set using
 .BR sline_setup (3),
-commands will be recorded sequentially from index zero (0) onwards.
+user input will be recorded sequentially from index zero (0) onwards.
 .SH RETURN VALUE
 .PP
 .BR sline_history_get ()

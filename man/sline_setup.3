@@ -23,16 +23,16 @@ Failing to do so might lead to undefined behavior.
 The
 .I entry_size
 parameter represents the size in bytes
-to be allocated for storing each entry in the command history list.
-.SS Disabling command history
+to be allocated for storing each entry in the user input history list.
+.SS Disabling user input history
 .PP
 If
 .I entry_size
 is less than or equal to zero (<=0),
-command history is disabled.
+user input history is disabled.
 This cannot be changed once set by a program.
 .PP
-When command history is disabled, 
+When user input history is disabled, 
 .BR sline (3) 
 will ignore any presses to the Up/Down arrow keys.
 .SH RETURN VALUE
