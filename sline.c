@@ -583,18 +583,18 @@ sline_history_get(int pos)
 }
 
 int
-sline_setup(int entry_size)
+sline_setup(int hist)
 {
 	int i;
 
 	sline_set_prompt(SLINE_PROMPT_DEFAULT);
 
-	if (entry_size <= 0) {
+	if (hist <= 0) {
 		sline_history = 0; /* Disabling history */
 		goto termios;
 	}
 
-	hist_entry_size = entry_size;
+	hist_entry_size = hist;
 	for (i = 0; i < HISTORY_SIZE; ++i) {
 		history[i] = calloc(hist_entry_size, sizeof(char));
 		if (history[i] == NULL) {
