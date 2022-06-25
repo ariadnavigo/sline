@@ -19,11 +19,11 @@ The prototypes for the three subroutines mentioned above are:
 
 ```
 /* 
- * sline_setup(): Sets the terminal up. The entry_size parameter sets the size
- * of user input history buffers; a value of zero (0) will disable the history
+ * sline_setup(): Sets the terminal up. The hist parameter sets the size of 
+ * user input history buffers; a value of zero (0) will disable the history
  * feature altogether.
  */
-int sline_setup(int entry_size);
+int sline_setup(int hist);
 
 /*
  * sline(): Open an sline prompt. User input is stored in buf, reading at most
