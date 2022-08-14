@@ -27,10 +27,15 @@ and also history browsing by means of the Up/Down arrow keys.
 .BR sline ()
 supports UTF-8 multibyte characters in user input.
 .PP
-The prompt will only allow to type in as many characters as set as maximum.
+.BR sline ()
+does not take over handling of any user requested signals
+(e.g. SIGINT, SIGSTOP).
+It is left to the user program to handle these as seen fit.
+.PP
+The prompt will only allow to type in as many characters as set as maximum
 (i.e.
 .I size
-- 1)
+- 1).
 .PP
 The caller subroutine should ensure the correct allocation of the
 .I buf
