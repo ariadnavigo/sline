@@ -12,7 +12,7 @@
 
 #define CURSOR_BUF_SIZE 16 /* Used for cursor movement directives */
 #define HISTORY_SIZE 50
-#define SLINE_PROMPT_DEFAULT "> " 
+#define SLINE_PROMPT_DEFAULT "> "
 #define SLINE_PROMPT_SIZE 32
 #define UTF8_BYTES 4
 
@@ -454,17 +454,17 @@ sline(char *buf, int size, const char *init)
 
 	write(STDOUT_FILENO, sline_prompt, SLINE_PROMPT_SIZE);
 
-	/* 
+	/*
 	 * We're always writing one less, so together with the memset() call
-	 * below, using wsize will guarantee the last character in buf to 
+	 * below, using wsize will guarantee the last character in buf to
 	 * always be '\0'.
 	 */
-	wsize = size - 1; 
+	wsize = size - 1;
 	memset(buf, 0, size);
 	pos = 0;
 	buf_i = 0;
 	if (init != NULL) {
-		/* 
+		/*
 		 * Using size instead of wsize because we're already given a
 		 * null terminated string.
 		 */
