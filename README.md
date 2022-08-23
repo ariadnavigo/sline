@@ -5,7 +5,7 @@ with support for line-editing and user input history. It implements a simple
 VT100 compatible driver that makes it totally independent of third-party 
 libraries. sline also supports UTF-8 in user input.
 
-sline was originally part of [scalc](https://sr.ht/~arivigo/scalc).
+sline was originally part of [scalc](https://github.com/ariadnavigo/scalc).
 
 ## Basic usage
 
@@ -60,9 +60,9 @@ This little snippet illustrates the basic usage of sline:
 
 For more complex use cases, you may have a look at projects like:
 
-* [c2f](https://sr.ht/~arivigo/c2f)
-* [cras](https://sr.ht/~arivigo/cras)
-* [scalc](https://sr.ht/~arivigo/scalc)
+* [c2f](https://github.com/ariadnavigo/c2f)
+* [cras](https://github.com/ariadnavigo/cras)
+* [scalc](https://github.com/ariadnavigo/scalc)
 
 Other procedures in sline allow for checking errors, retrieving user input 
 history, setting the default prompt symbol, etc. You may check the 
@@ -107,16 +107,6 @@ library easily used as-is by including it as a module into your project. If
 you want to follow this route, make sure your project has access to a
 compatible implementation of ``strlcpy()`` or make use of the one included in 
 sline itself.
-
-## Contributing
-
-All contributions are welcome! If you wish to send in patches, ideas, or report
-a bug, you may do so by sending an email to the
-[sline-devel](https://lists.sr.ht/~arivigo/sline-devel) mailing list.
-
-If interested in getting some news from the project, you may also want to
-subscribe to the low-volume
-[sline-announce](https://lists.sr.ht/~arivigo/sline-announce) mailing list!
 
 ## License
 
