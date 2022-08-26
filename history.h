@@ -3,7 +3,6 @@
 #define HISTORY_SIZE 50
 
 void history_next(void);
-void history_rotate(void);
 void history_set(int pos, const char *input);
 int history_setup(void);
 

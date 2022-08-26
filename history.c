@@ -8,8 +8,21 @@
 #include "strlcpy.h"
 #include "sline.h"
 
+static void history_rotate(void);
+
 char *history[HISTORY_SIZE];
 int hist_top, hist_pos;
+
+static void
+history_rotate(void)
+{
+	int i;
+
+	for (i = 1; i < HISTORY_SIZE; ++i)
+		strlcpy(history[i - 1], history[i], sline_hist_entry_size);
+
+	--hist_top;
+}
 
 void
 history_next(void)
@@ -20,17 +33,6 @@ history_next(void)
 	++hist_top;
 	if (hist_top >= HISTORY_SIZE)
 		history_rotate();
-}
-
-void
-history_rotate(void)
-{
-	int i;
-
-	for (i = 1; i < HISTORY_SIZE; ++i)
-		strlcpy(history[i - 1], history[i], sline_hist_entry_size);
-
-	--hist_top;
 }
 
 void
