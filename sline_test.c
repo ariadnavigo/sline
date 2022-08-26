@@ -40,7 +40,8 @@ main(void)
 	printf("sline_test: compiled with sline %s.\n", sline_version());
 	printf("Type 'exit', 'quit', or Ctrl-D to exit.\n");
 
-	if (sline_setup(BUF_SIZE) < 0) {
+	sline_hist_entry_size = BUF_SIZE;
+	if (sline_setup() < 0) {
 		print_err();
 		return -1;
 	}

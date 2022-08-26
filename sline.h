@@ -14,8 +14,9 @@ int sline(char *buf, int size, const char *init);
 void sline_end(void);
 const char *sline_errmsg(void);
 const char *sline_history_get(int pos);
-int sline_setup(int hist);
+int sline_setup(void);
 void sline_set_prompt(const char *fmt, ...);
 const char *sline_version(void);
 
-extern int sline_err;
+extern int sline_history, sline_err;
+extern size_t sline_hist_entry_size;
