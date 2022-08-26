@@ -20,7 +20,7 @@ options:
 	@echo
 
 .c.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -fPIC -c -o $@ $<
+	${CC} ${CFLAGS} ${CPPFLAGS} -fPIC -c -o $@ $<
 
 ${OBJ}: config.mk
 
