@@ -7,8 +7,13 @@ sline_setup \- Set up terminal for use with
 .PP
 .B #include <sline.h>
 .PP
-.B int
-.BI "sline_setup(int " hist );
+.B int sline_setup(void);
+.PP
+.BI "extern int " sline_err ;
+.PP
+.BI "extern int " sline_history ;
+.PP
+.BI "extern size_t " sline_hist_entry_size ;
 .SH DESCRIPTION
 .PP
 .BR sline_setup ()
@@ -19,22 +24,28 @@ in a program.
 This subroutine should be called always before calling
 .BR sline (3) .
 Failing to do so might lead to undefined behavior.
+.SS Setting up and disabling user input history
 .PP
-The
-.I hist
-parameter represents the size in bytes
-to be allocated for storing each entry in the user input history list.
-.SS Disabling user input history
+User input history is always enabled by default,
+but may be disabled by setting
+.I sline_history
+to zero (0)
+before calling
+.BR sline_setup ().
 .PP
-If
-.I hist
-is less than or equal to zero (<=0),
-user input history is disabled.
-This cannot be changed once set by a program.
+The amount of characters per entry is set to a value set at compile-time,
+but can be overriden by setting
+.I sline_hist_entry_size
+before calling
+.BR sline_setup ().
 .PP
-When user input history is disabled, 
-.BR sline (3) 
-will ignore any presses to the Up/Down arrow keys.
+Modifying the values of
+.I sline_history 
+or 
+.I sline_hist_entry_size
+after having called
+.BR sline_setup ()
+may lead to undefined behavior.
 .SH RETURN VALUE
 .PP
 .BR sline_setup ()
