@@ -1,6 +1,7 @@
 /* See LICENSE for copyright and license details. */
 
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
