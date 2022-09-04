@@ -8,7 +8,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "history.h"
+#include "hist.h"
 #include "sline.h"
 #include "strlcpy.h"
 
@@ -369,7 +369,7 @@ chr_delete(char *buf, size_t size, int bsmode)
 	free(suff);
 
 	if (sline_history > 0)
-		history_set(hist_top, buf);
+		hist_set(hist_top, buf);
 }
 
 static void
@@ -400,7 +400,7 @@ chr_ins(char *buf, size_t size, const char *utf8)
 	free(suff);
 
 	if (sline_history > 0 && strlen(buf) > 0)
-		history_set(hist_top, buf);
+		hist_set(hist_top, buf);
 }
 
 static void
@@ -408,8 +408,8 @@ chr_return(const char *buf)
 {
 	write(STDOUT_FILENO, "\n", 1);
 	if (sline_history > 0) {
-		history_set(hist_pos, buf);
-		history_next();
+		hist_set(hist_pos, buf);
+		hist_next();
 	}
 }
 
@@ -507,9 +507,9 @@ sline_end(void)
 	if (sline_history == 0 || hist_top < 0)
 		goto termios;
 
-	for (i = 0; i < HISTORY_SIZE; ++i) {
-		if (history[i] != NULL)
-			free(history[i]);
+	for (i = 0; i < HIST_SIZE; ++i) {
+		if (hist[i] != NULL)
+			free(hist[i]);
 	}
 
 termios:
@@ -541,7 +541,7 @@ sline_history_get(int pos)
 	if (pos < 0 || pos > hist_top)
 		return NULL;
 
-	return history[pos];
+	return hist[pos];
 }
 
 int
@@ -550,7 +550,7 @@ sline_setup(void)
 	sline_set_prompt(SLINE_PROMPT_DEFAULT);
 
 	if (sline_history > 0) 
-		history_setup();
+		hist_setup();
 
 	if (tcgetattr(STDIN_FILENO, &old) < 0) {
 		sline_err = SLINE_ERR_TERMIOS_GET;
