@@ -549,8 +549,12 @@ sline_setup(void)
 {
 	sline_set_prompt(SLINE_PROMPT_DEFAULT);
 
-	if (sline_history > 0) 
-		hist_setup();
+	if (sline_history > 0) {
+		if (hist_setup(sline_hist_entry_size) < 0) {
+			sline_err = SLINE_ERR_MEMORY;
+			return -1;
+		}
+	}
 
 	if (tcgetattr(STDIN_FILENO, &old) < 0) {
 		sline_err = SLINE_ERR_TERMIOS_GET;

@@ -6,9 +6,10 @@
 
 #include "hist.h"
 #include "strlcpy.h"
-#include "sline.h"
 
 static void hist_rotate(void);
+
+static size_t hist_entry_size;
 
 char *hist[HIST_SIZE];
 int hist_top, hist_pos;
@@ -19,7 +20,7 @@ hist_rotate(void)
 	int i;
 
 	for (i = 1; i < HIST_SIZE; ++i)
-		strlcpy(hist[i - 1], hist[i], sline_hist_entry_size);
+		strlcpy(hist[i - 1], hist[i], hist_entry_size);
 
 	--hist_top;
 }
@@ -38,20 +39,19 @@ hist_next(void)
 void
 hist_set(int pos, const char *input)
 {
-	strlcpy(hist[pos], input, sline_hist_entry_size);
+	strlcpy(hist[pos], input, hist_entry_size);
 }
 
 int
-hist_setup(void)
+hist_setup(size_t entry_size)
 {
 	int i;
 
+	hist_entry_size = entry_size;
 	for (i = 0; i < HIST_SIZE; ++i) {
-		hist[i] = calloc(sline_hist_entry_size, sizeof(char));
-		if (hist[i] == NULL) {
-			sline_err = SLINE_ERR_MEMORY;
+		hist[i] = calloc(hist_entry_size, sizeof(char));
+		if (hist[i] == NULL) 
 			return -1;
-		}
 	}
 
 	return 0;
