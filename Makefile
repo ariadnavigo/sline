@@ -4,7 +4,7 @@
 
 include config.mk
 
-SRC = hist.c sline.c strlcpy.c
+SRC = hist.c sline.c strlcpy.c vt100.c
 OBJ = ${SRC:.c=.o}
 MAN = man/sline.3 man/sline_end.3 man/sline_errmsg.3 man/sline_history_get.3 \
       man/sline_setup.3 man/sline_set_prompt.3 man/sline_version.3
