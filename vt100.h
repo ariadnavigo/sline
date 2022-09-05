@@ -19,13 +19,7 @@ enum {
 	VT_END
 };
 
-char *vt100_buf_slice(char *src, int pivot, size_t size);
-
 void vt100_ln_write(char *buf, size_t size, const char *src);
-void vt100_ln_redraw(const char *str, size_t nbytes);
-
-int vt100_utf8_nbytes(const char *utf8);
-int vt100_utf8_nbytes_r(const char *utf8);
 
 void vt100_cur_mov_left(char *buf);
 void vt100_cur_mov_right(char *buf);

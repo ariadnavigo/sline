@@ -10,8 +10,14 @@
 #include "vt100.h"
 
 static int esc_seq(char *seq);
+static char *buf_slice(char *src, int pivot, size_t size);
+static void ln_redraw(const char *str, size_t nbytes);
+static int utf8_nbytes(const char *utf8);
+static int utf8_nbytes_r(const char *utf8);
 
 size_t vt100_pos, vt100_buf_i;
+
+/* Auxiliary subroutines */
 
 static int
 esc_seq(char *seq)
@@ -32,8 +38,8 @@ esc_seq(char *seq)
 	return 0;
 }
 
-char *
-vt100_buf_slice(char *src, int pivot, size_t size)
+static char *
+buf_slice(char *src, int pivot, size_t size)
 {
 	char *suff, *ptr;
 	size_t ptr_size;
@@ -49,6 +55,47 @@ vt100_buf_slice(char *src, int pivot, size_t size)
 
 	return suff;
 }
+
+static void
+ln_redraw(const char *str, size_t nbytes)
+{
+	write(STDOUT_FILENO, "\x1b[0K", 4);
+	write(STDOUT_FILENO, "\x1b", 1);
+	write(STDOUT_FILENO, "7", 1); /* ESC 7: portable save cursor */
+	write(STDOUT_FILENO, str, nbytes);
+	write(STDOUT_FILENO, "\x1b", 1);
+	write(STDOUT_FILENO, "8", 1); /* ESC 8: portable restore cursor */
+}
+
+static int
+utf8_nbytes(const char *utf8)
+{
+	if (utf8[0] >= '\xc0' && utf8[0] <= '\xdf')
+		return 2;
+	else if (utf8[0] >= '\xe0' && utf8[0] <= '\xef')
+		return 3;
+	else if (utf8[0] >= '\xf0' && utf8[0] <= '\xf7')
+		return 4;
+
+	return 1;
+}
+
+static int
+utf8_nbytes_r(const char *utf8)
+{
+	const char *ptr;
+	int nbytes;
+
+	for (ptr = utf8; (nbytes = utf8_nbytes(ptr)) == 1; --ptr) {
+		/* We stop if we're an ASCII char */
+		if ((unsigned char)ptr[0] <= '\x7f')
+			return 1;
+	}
+
+	return nbytes;
+}
+
+/* VT100 driver API */
 
 void
 vt100_ln_write(char *buf, size_t size, const char *src)
@@ -67,45 +114,6 @@ vt100_ln_write(char *buf, size_t size, const char *src)
 	vt100_pos = vt100_cur_get_end_pos(buf);
 }
 
-void
-vt100_ln_redraw(const char *str, size_t nbytes)
-{
-	write(STDOUT_FILENO, "\x1b[0K", 4);
-	write(STDOUT_FILENO, "\x1b", 1);
-	write(STDOUT_FILENO, "7", 1); /* ESC 7: portable save cursor */
-	write(STDOUT_FILENO, str, nbytes);
-	write(STDOUT_FILENO, "\x1b", 1);
-	write(STDOUT_FILENO, "8", 1); /* ESC 8: portable restore cursor */
-}
-
-int
-vt100_utf8_nbytes(const char *utf8)
-{
-	if (utf8[0] >= '\xc0' && utf8[0] <= '\xdf')
-		return 2;
-	else if (utf8[0] >= '\xe0' && utf8[0] <= '\xef')
-		return 3;
-	else if (utf8[0] >= '\xf0' && utf8[0] <= '\xf7')
-		return 4;
-
-	return 1;
-}
-
-int
-vt100_utf8_nbytes_r(const char *utf8)
-{
-	const char *ptr;
-	int nbytes;
-
-	for (ptr = utf8; (nbytes = vt100_utf8_nbytes(ptr)) == 1; --ptr) {
-		/* We stop if we're an ASCII char */
-		if ((unsigned char)ptr[0] <= '\x7f')
-			return 1;
-	}
-
-	return nbytes;
-}
-
 size_t
 vt100_cur_get_end_pos(char *buf)
 {
@@ -116,7 +124,7 @@ vt100_cur_get_end_pos(char *buf)
 	end_pos = 0;
 	while (buf[i] != '\0') {
 		++end_pos;
-		i += vt100_utf8_nbytes(&buf[i]);
+		i += utf8_nbytes(&buf[i]);
 	}
 
 	return end_pos;
@@ -130,7 +138,7 @@ vt100_cur_mov_left(char *buf)
 	if (vt100_pos == 0)
 		return;
 
-	nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i - 1]);
+	nbytes = utf8_nbytes_r(&buf[vt100_buf_i - 1]);
 	vt100_buf_i -= nbytes;
 
 	write(STDOUT_FILENO, "\x1b[D", 3);
@@ -145,7 +153,7 @@ vt100_cur_mov_right(char *buf)
 	if (vt100_pos == vt100_cur_get_end_pos(buf))
 		return;
 
-	nbytes = vt100_utf8_nbytes(&buf[vt100_buf_i]);
+	nbytes = utf8_nbytes(&buf[vt100_buf_i]);
 	vt100_buf_i += nbytes;
 
 	write(STDOUT_FILENO, "\x1b[C", 3);
@@ -195,13 +203,13 @@ vt100_utf8_delete(char *buf, size_t size, int bsmode)
 		if (vt100_buf_i == 0)
 			return;
 
-		nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i - 1]);
+		nbytes = utf8_nbytes_r(&buf[vt100_buf_i - 1]);
 		vt100_buf_i -= nbytes;
 	} else {
-		nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i]);
+		nbytes = utf8_nbytes_r(&buf[vt100_buf_i]);
 	}
 
-	if ((suff = vt100_buf_slice(buf, vt100_buf_i, size)) == NULL)
+	if ((suff = buf_slice(buf, vt100_buf_i, size)) == NULL)
 		return;
 
 	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
@@ -212,7 +220,7 @@ vt100_utf8_delete(char *buf, size_t size, int bsmode)
 		write(STDOUT_FILENO, "\b", 1);
 		--vt100_pos;
 	}
-	vt100_ln_redraw(suff_new, len);
+	ln_redraw(suff_new, len);
 
 	free(suff);
 }
@@ -227,11 +235,11 @@ vt100_utf8_insert(char *buf, size_t size, const char *utf8)
 	if (vt100_pos >= size)
 		return;
 
-	if ((suff = vt100_buf_slice(buf, vt100_buf_i, size)) == NULL)
+	if ((suff = buf_slice(buf, vt100_buf_i, size)) == NULL)
 		return;
 
 	len = strlen(suff);
-	nbytes = vt100_utf8_nbytes(utf8);
+	nbytes = utf8_nbytes(utf8);
 	for (i = 0; i < nbytes; ++i)
 		buf[strlen(buf)] = utf8[i];
 
@@ -240,7 +248,7 @@ vt100_utf8_insert(char *buf, size_t size, const char *utf8)
 
 	write(STDOUT_FILENO, utf8, nbytes);
 	++vt100_pos;
-	vt100_ln_redraw(suff, len);
+	ln_redraw(suff, len);
 
 	free(suff);
 }
@@ -294,7 +302,7 @@ vt100_read_key(char *utf8)
 		return VT_RET;
 	} else if (key == '\t') {
 		return VT_TAB;
-	} else if ((nbytes = vt100_utf8_nbytes(&key)) > 1) {
+	} else if ((nbytes = utf8_nbytes(&key)) > 1) {
 		utf8[0] = key;
 		read(STDIN_FILENO, utf8 + 1, nbytes - 1);
 		return VT_CHR;
