@@ -46,7 +46,7 @@ key_up(char *buf, size_t size)
 	if ((hist = sline_history_get(hist_pos)) == NULL)
 		return;
 
-	vt100_ln_buf_replace(buf, size, hist);
+	vt100_ln_write(buf, size, hist);
 }
 
 static void
@@ -65,7 +65,7 @@ key_down(char *buf, size_t size)
 	if ((hist = sline_history_get(hist_pos)) == NULL)
 		return;
 
-	vt100_ln_buf_replace(buf, size, hist);
+	vt100_ln_write(buf, size, hist);
 }
 
 static void
@@ -155,7 +155,7 @@ sline(char *buf, int size, const char *init)
 		 * Using size instead of wsize because we're already given a
 		 * null terminated string.
 		 */
-		vt100_ln_buf_replace(buf, size, init);
+		vt100_ln_write(buf, size, init);
 	}
 
 	memset(utf8, 0, UTF8_BYTES);

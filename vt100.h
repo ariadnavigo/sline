@@ -20,7 +20,8 @@ enum {
 };
 
 char *vt100_buf_slice(char *src, int pivot, size_t size);
-void vt100_ln_buf_replace(char *buf, size_t size, const char *src);
+
+void vt100_ln_write(char *buf, size_t size, const char *src);
 void vt100_ln_redraw(const char *str, size_t nbytes);
 
 int vt100_utf8_nbytes(const char *utf8);

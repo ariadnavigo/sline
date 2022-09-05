@@ -51,7 +51,7 @@ vt100_buf_slice(char *src, int pivot, size_t size)
 }
 
 void
-vt100_ln_buf_replace(char *buf, size_t size, const char *src)
+vt100_ln_write(char *buf, size_t size, const char *src)
 {
 	size_t buf_len;
 
