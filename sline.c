@@ -118,8 +118,6 @@ sline(char *buf, int size, const char *init)
 	 */
 	wsize = size - 1;
 	memset(buf, 0, size);
-	vt100_pos = 0;
-	vt100_buf_i = 0;
 	if (init != NULL) {
 		/*
 		 * Using size instead of wsize because we're already given a

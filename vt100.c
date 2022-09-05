@@ -15,7 +15,7 @@ static void ln_redraw(const char *str, size_t nbytes);
 static int utf8_nbytes(const char *utf8);
 static int utf8_nbytes_r(const char *utf8);
 
-size_t vt100_pos, vt100_buf_i;
+static size_t pos, buf_i;
 
 /* Auxiliary subroutines */
 
@@ -110,8 +110,8 @@ vt100_ln_write(char *buf, size_t size, const char *src)
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, buf, buf_len);
 	
-	vt100_buf_i = buf_len;
-	vt100_pos = vt100_cur_get_end_pos(buf);
+	buf_i = buf_len;
+	pos = vt100_cur_get_end_pos(buf);
 }
 
 size_t
@@ -135,14 +135,14 @@ vt100_cur_mov_left(char *buf)
 {
 	int nbytes;
 
-	if (vt100_pos == 0)
+	if (pos == 0)
 		return;
 
-	nbytes = utf8_nbytes_r(&buf[vt100_buf_i - 1]);
-	vt100_buf_i -= nbytes;
+	nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
+	buf_i -= nbytes;
 
 	write(STDOUT_FILENO, "\x1b[D", 3);
-	--vt100_pos;
+	--pos;
 }
 
 void
@@ -150,14 +150,14 @@ vt100_cur_mov_right(char *buf)
 {
 	int nbytes;
 
-	if (vt100_pos == vt100_cur_get_end_pos(buf))
+	if (pos == vt100_cur_get_end_pos(buf))
 		return;
 
-	nbytes = utf8_nbytes(&buf[vt100_buf_i]);
-	vt100_buf_i += nbytes;
+	nbytes = utf8_nbytes(&buf[buf_i]);
+	buf_i += nbytes;
 
 	write(STDOUT_FILENO, "\x1b[C", 3);
-	++vt100_pos;
+	++pos;
 }
 
 void
@@ -165,14 +165,14 @@ vt100_cur_mov_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
 
-	if (vt100_pos == 0)
+	if (pos == 0)
 		return;
 
-	vt100_buf_i = 0;
+	buf_i = 0;
 
-	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", vt100_pos);
+	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", pos);
 	write(STDOUT_FILENO, cmd, strlen(cmd));
-	vt100_pos = 0;
+	pos = 0;
 }
 
 void
@@ -181,15 +181,15 @@ vt100_cur_mov_end(char *buf)
 	size_t end_pos;
 	char cmd[CURSOR_BUF_SIZE];
 
-	if (buf[vt100_buf_i] == '\0')
+	if (buf[buf_i] == '\0')
 		return;
 
 	end_pos = vt100_cur_get_end_pos(buf);
-	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", end_pos - vt100_pos);
+	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdC", end_pos - pos);
 	write(STDOUT_FILENO, cmd, strlen(cmd));
-	vt100_pos = end_pos;
+	pos = end_pos;
 	
-	vt100_buf_i = strlen(buf);
+	buf_i = strlen(buf);
 }
 
 void
@@ -200,16 +200,16 @@ vt100_utf8_delete(char *buf, size_t size, int bsmode)
 	size_t len;
 
 	if (bsmode > 0) {
-		if (vt100_buf_i == 0)
+		if (buf_i == 0)
 			return;
 
-		nbytes = utf8_nbytes_r(&buf[vt100_buf_i - 1]);
-		vt100_buf_i -= nbytes;
+		nbytes = utf8_nbytes_r(&buf[buf_i - 1]);
+		buf_i -= nbytes;
 	} else {
-		nbytes = utf8_nbytes_r(&buf[vt100_buf_i]);
+		nbytes = utf8_nbytes_r(&buf[buf_i]);
 	}
 
-	if ((suff = buf_slice(buf, vt100_buf_i, size)) == NULL)
+	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
 		return;
 
 	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
@@ -218,7 +218,7 @@ vt100_utf8_delete(char *buf, size_t size, int bsmode)
 
 	if (bsmode > 0) {
 		write(STDOUT_FILENO, "\b", 1);
-		--vt100_pos;
+		--pos;
 	}
 	ln_redraw(suff_new, len);
 
@@ -232,10 +232,10 @@ vt100_utf8_insert(char *buf, size_t size, const char *utf8)
 	size_t len;
 	int i, nbytes;
 
-	if (vt100_pos >= size)
+	if (pos >= size)
 		return;
 
-	if ((suff = buf_slice(buf, vt100_buf_i, size)) == NULL)
+	if ((suff = buf_slice(buf, buf_i, size)) == NULL)
 		return;
 
 	len = strlen(suff);
@@ -244,10 +244,10 @@ vt100_utf8_insert(char *buf, size_t size, const char *utf8)
 		buf[strlen(buf)] = utf8[i];
 
 	strlcpy(&buf[strlen(buf)], suff, len + 1);
-	vt100_buf_i += nbytes;
+	buf_i += nbytes;
 
 	write(STDOUT_FILENO, utf8, nbytes);
-	++vt100_pos;
+	++pos;
 	ln_redraw(suff, len);
 
 	free(suff);

@@ -31,5 +31,3 @@ void vt100_utf8_delete(char *buf, size_t size, int bsmode);
 void vt100_utf8_insert(char *buf, size_t size, const char *utf8);
 
 int vt100_read_key(char *utf8);
-
-extern size_t vt100_pos, vt100_buf_i;
