@@ -155,6 +155,67 @@ vt100_cur_goto_end(char *buf)
 	vt100_buf_i = strlen(buf);
 }
 
+void
+vt100_utf8_delete(char *buf, size_t size, int bsmode)
+{
+	char *suff, *suff_new;
+	int nbytes;
+	size_t len;
+
+	if (bsmode > 0) {
+		if (vt100_buf_i == 0)
+			return;
+
+		nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i - 1]);
+		vt100_buf_i -= nbytes;
+	} else {
+		nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i]);
+	}
+
+	if ((suff = vt100_buf_slice(buf, vt100_buf_i, size)) == NULL)
+		return;
+
+	suff_new = suff + nbytes; /* Deleting character from suff; way safer */
+	len = strlen(suff_new);
+	strlcpy(&buf[strlen(buf)], suff_new, len + 1);
+
+	if (bsmode > 0) {
+		write(STDOUT_FILENO, "\b", 1);
+		--vt100_pos;
+	}
+	vt100_ln_redraw(suff_new, len);
+
+	free(suff);
+}
+
+void
+vt100_utf8_insert(char *buf, size_t size, const char *utf8)
+{
+	char *suff;
+	size_t len;
+	int i, nbytes;
+
+	if (vt100_pos >= size)
+		return;
+
+	if ((suff = vt100_buf_slice(buf, vt100_buf_i, size)) == NULL)
+		return;
+
+	len = strlen(suff);
+	nbytes = vt100_utf8_nbytes(utf8);
+	for (i = 0; i < nbytes; ++i)
+		buf[strlen(buf)] = utf8[i];
+
+	strlcpy(&buf[strlen(buf)], suff, len + 1);
+	vt100_buf_i += nbytes;
+
+	write(STDOUT_FILENO, utf8, nbytes);
+	++vt100_pos;
+	vt100_ln_redraw(suff, len);
+
+	free(suff);
+}
+
 int
 vt100_read_key(char *utf8)
 {

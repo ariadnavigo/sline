@@ -10,7 +10,7 @@ enum {
 	VT_DLT,
 	VT_EOF,
 	VT_RET,
-	VT_TAB, /* Tab is ignored by now. */
+	VT_TAB,
 	VT_UP,
 	VT_DWN,
 	VT_LFT,
@@ -29,6 +29,9 @@ int vt100_utf8_nbytes_r(const char *utf8);
 void vt100_cur_goto_home(void);
 void vt100_cur_goto_end(char *buf);
 size_t vt100_cur_get_end_pos(char *buf);
+
+void vt100_utf8_delete(char *buf, size_t size, int bsmode);
+void vt100_utf8_insert(char *buf, size_t size, const char *utf8);
 
 int vt100_read_key(char *utf8);
 
