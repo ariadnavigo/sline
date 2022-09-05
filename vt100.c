@@ -59,7 +59,7 @@ vt100_ln_write(char *buf, size_t size, const char *src)
 	strlcpy(buf, src, size);
 	buf_len = strlen(buf);
 
-	vt100_cur_goto_home();
+	vt100_cur_mov_home();
 	write(STDOUT_FILENO, "\x1b[0K", 4);
 	write(STDOUT_FILENO, buf, buf_len);
 	
@@ -123,7 +123,37 @@ vt100_cur_get_end_pos(char *buf)
 }
 
 void
-vt100_cur_goto_home(void)
+vt100_cur_mov_left(char *buf)
+{
+	int nbytes;
+
+	if (vt100_pos == 0)
+		return;
+
+	nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i - 1]);
+	vt100_buf_i -= nbytes;
+
+	write(STDOUT_FILENO, "\x1b[D", 3);
+	--vt100_pos;
+}
+
+void
+vt100_cur_mov_right(char *buf)
+{
+	int nbytes;
+
+	if (vt100_pos == vt100_cur_get_end_pos(buf))
+		return;
+
+	nbytes = vt100_utf8_nbytes(&buf[vt100_buf_i]);
+	vt100_buf_i += nbytes;
+
+	write(STDOUT_FILENO, "\x1b[C", 3);
+	++vt100_pos;
+}
+
+void
+vt100_cur_mov_home(void)
 {
 	char cmd[CURSOR_BUF_SIZE];
 
@@ -137,9 +167,8 @@ vt100_cur_goto_home(void)
 	vt100_pos = 0;
 }
 
-
 void
-vt100_cur_goto_end(char *buf)
+vt100_cur_mov_end(char *buf)
 {
 	size_t end_pos;
 	char cmd[CURSOR_BUF_SIZE];

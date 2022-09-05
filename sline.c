@@ -19,8 +19,6 @@
 
 static void key_up(char *buf, size_t size);
 static void key_down(char *buf, size_t size);
-static void key_left(char *buf);
-static void key_right(char *buf);
 static void key_return(const char *buf);
 static void key_delete(char *buf, size_t size, int bsmode);
 static void key_char(char *buf, size_t size, const char *utf8);
@@ -66,36 +64,6 @@ key_down(char *buf, size_t size)
 		return;
 
 	vt100_ln_write(buf, size, hist);
-}
-
-static void
-key_left(char *buf)
-{
-	int nbytes;
-
-	if (vt100_pos == 0)
-		return;
-
-	nbytes = vt100_utf8_nbytes_r(&buf[vt100_buf_i - 1]);
-	vt100_buf_i -= nbytes;
-
-	write(STDOUT_FILENO, "\x1b[D", 3);
-	--vt100_pos;
-}
-
-static void
-key_right(char *buf)
-{
-	int nbytes;
-
-	if (vt100_pos == vt100_cur_get_end_pos(buf))
-		return;
-
-	nbytes = vt100_utf8_nbytes(&buf[vt100_buf_i]);
-	vt100_buf_i += nbytes;
-
-	write(STDOUT_FILENO, "\x1b[C", 3);
-	++vt100_pos;
 }
 
 static void
@@ -182,16 +150,16 @@ sline(char *buf, int size, const char *init)
 			key_down(buf, wsize);
 			break;
 		case VT_LFT:
-			key_left(buf);
+			vt100_cur_mov_left(buf);
 			break;
 		case VT_RGHT:
-			key_right(buf);
+			vt100_cur_mov_right(buf);
 			break;
 		case VT_HOME:
-			vt100_cur_goto_home();
+			vt100_cur_mov_home();
 			break;
 		case VT_END:
-			vt100_cur_goto_end(buf);
+			vt100_cur_mov_end(buf);
 			break;
 		case VT_CHR:
 			key_char(buf, wsize, utf8);
