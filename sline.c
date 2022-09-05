@@ -30,6 +30,8 @@ int sline_history = 1; /* History feature on by default */
 int sline_err = SLINE_ERR_DEF;
 size_t sline_hist_entry_size = SLINE_HIST_ENTRY_DEF_SIZE;
 
+/* Auxiliary subroutines */
+
 static void
 on_up(char *buf, size_t size)
 {
