@@ -155,9 +155,7 @@ sline(char *buf, int size, const char *init)
 		 * Using size instead of wsize because we're already given a
 		 * null terminated string.
 		 */
-		strlcpy(buf, init, size);
-		write(STDOUT_FILENO, buf, size);
-		vt100_cur_goto_end(buf);	
+		vt100_ln_buf_replace(buf, size, init);
 	}
 
 	memset(utf8, 0, UTF8_BYTES);
