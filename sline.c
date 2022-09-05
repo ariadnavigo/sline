@@ -17,11 +17,11 @@
 #define SLINE_PROMPT_DEFAULT "> "
 #define SLINE_PROMPT_SIZE 32
 
-static void key_up(char *buf, size_t size);
-static void key_down(char *buf, size_t size);
-static void key_return(const char *buf);
-static void key_delete(char *buf, size_t size, int bsmode);
-static void key_char(char *buf, size_t size, const char *utf8);
+static void on_up(char *buf, size_t size);
+static void on_down(char *buf, size_t size);
+static void on_return(const char *buf);
+static void on_delete(char *buf, size_t size, int bsmode);
+static void on_char(char *buf, size_t size, const char *utf8);
 
 static char sline_prompt[SLINE_PROMPT_SIZE];
 static struct termios old, term;
@@ -31,7 +31,7 @@ int sline_err = SLINE_ERR_DEF;
 size_t sline_hist_entry_size = SLINE_HIST_ENTRY_DEF_SIZE;
 
 static void
-key_up(char *buf, size_t size)
+on_up(char *buf, size_t size)
 {
 	const char *hist;
 
@@ -48,7 +48,7 @@ key_up(char *buf, size_t size)
 }
 
 static void
-key_down(char *buf, size_t size)
+on_down(char *buf, size_t size)
 {
 	const char *hist;
 
@@ -67,7 +67,7 @@ key_down(char *buf, size_t size)
 }
 
 static void
-key_return(const char *buf)
+on_return(const char *buf)
 {
 	write(STDOUT_FILENO, "\n", 1);
 	if (sline_history > 0) {
@@ -77,7 +77,7 @@ key_return(const char *buf)
 }
 
 static void
-key_delete(char *buf, size_t size, int bsmode)
+on_delete(char *buf, size_t size, int bsmode)
 {
 	vt100_utf8_delete(buf, size, bsmode);
 
@@ -88,7 +88,7 @@ key_delete(char *buf, size_t size, int bsmode)
 }
 
 static void
-key_char(char *buf, size_t size, const char *utf8)
+on_char(char *buf, size_t size, const char *utf8)
 {
 	vt100_utf8_insert(buf, size, utf8);
 
@@ -131,23 +131,23 @@ sline(char *buf, int size, const char *init)
 	while ((key = vt100_read_key(utf8)) != -1) {
 		switch (key) {
 		case VT_BKSPC:
-			key_delete(buf, size, 1);
+			on_delete(buf, size, 1);
 			break;
 		case VT_DLT:
-			key_delete(buf, size, 0);
+			on_delete(buf, size, 0);
 			break;
 		case VT_EOF:
 			write(STDOUT_FILENO, "\n", 1);
 			sline_err = SLINE_ERR_EOF;
 			return -1;
 		case VT_RET:
-			key_return(buf);
+			on_return(buf);
 			return 0;
 		case VT_UP:
-			key_up(buf, wsize);
+			on_up(buf, wsize);
 			break;
 		case VT_DWN:
-			key_down(buf, wsize);
+			on_down(buf, wsize);
 			break;
 		case VT_LFT:
 			vt100_cur_mov_left(buf);
@@ -162,7 +162,7 @@ sline(char *buf, int size, const char *init)
 			vt100_cur_mov_end(buf);
 			break;
 		case VT_CHR:
-			key_char(buf, wsize, utf8);
+			on_char(buf, wsize, utf8);
 			break;
 		default:
 			/* Silently ignore everything that isn't caught. */
@@ -172,7 +172,7 @@ sline(char *buf, int size, const char *init)
 		memset(utf8, 0, UTF8_BYTES);
 	}
 
-	/* If we reach this, then term_key() returned -1 */
+	/* If we reach this, then vt100_read_key() returned -1 */
 	sline_err = SLINE_ERR_IO;
 
 	return -1;
