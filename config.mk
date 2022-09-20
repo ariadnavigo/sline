@@ -1,6 +1,6 @@
 # sline version
 MAJOR = 2
-VERSION = ${MAJOR}.0.0
+VERSION = ${MAJOR}.0.1
 
 LIBFULLNAME = libsline.so.${VERSION}
 LIBSONAME = libsline.so.${MAJOR}
