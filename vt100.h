@@ -20,6 +20,7 @@ enum {
 };
 
 void vt100_ln_write(char *buf, size_t size, const char *src);
+void vt100_ln_new(void);
 
 void vt100_cur_mov_left(char *buf);
 void vt100_cur_mov_right(char *buf);

@@ -114,6 +114,14 @@ vt100_ln_write(char *buf, size_t size, const char *src)
 	pos = vt100_cur_get_end_pos(buf);
 }
 
+void
+vt100_ln_new(void)
+{
+	write(STDOUT_FILENO, "\n", 1);
+	pos = 0;
+	buf_i = 0;
+}
+
 size_t
 vt100_cur_get_end_pos(char *buf)
 {
@@ -168,11 +176,10 @@ vt100_cur_mov_home(void)
 	if (pos == 0)
 		return;
 
-	buf_i = 0;
-
 	snprintf(cmd, CURSOR_BUF_SIZE, "\x1b[%zdD", pos);
 	write(STDOUT_FILENO, cmd, strlen(cmd));
 	pos = 0;
+	buf_i = 0;
 }
 
 void

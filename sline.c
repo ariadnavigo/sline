@@ -71,7 +71,8 @@ on_down(char *buf, size_t size)
 static void
 on_return(const char *buf)
 {
-	write(STDOUT_FILENO, "\n", 1);
+	vt100_ln_new();
+
 	if (sline_history > 0) {
 		hist_set(hist_pos, buf);
 		hist_next();
