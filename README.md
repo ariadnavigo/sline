@@ -71,10 +71,9 @@ further usage information.
 
 ## Build
 
-sline requires:
+sline is supported on Linux and OpenBSD, and requires:
 
-1. A POSIX-like system
-2. A C99 compiler
+1. A C99 compiler
 
 Build by using:
 
